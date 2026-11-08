@@ -325,6 +325,20 @@ details.more[open] summary::before { content: "▾ "; }
 .toast button { margin-left: auto; border: 0; background: none; color: var(--green); font-weight: 800; }
 @media (prefers-color-scheme: dark) { .toast button { color: #8FE0C0; } }
 
+/* ---------- team login ---------- */
+.login-hero { text-align: center; padding: 18px 0 6px; }
+.login-ic { width: 72px; height: 72px; margin: 0 auto 10px; border-radius: 22px; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 38px; box-shadow: var(--shadow); }
+.login-hero h2 { font-size: 24px; letter-spacing: -0.01em; }
+.login-hero p { color: var(--ink-2); margin: 6px auto 0; max-width: 300px; font-size: 14px; line-height: 1.5; }
+.pw-row { display: flex; gap: 8px; align-items: stretch; }
+.pw-row input { flex: 1; min-width: 0; }
+.pw-row .btn.sm { align-self: center; }
+.btn.big { width: 100%; min-height: 52px; font-size: 17px; margin-top: 4px; }
+.login-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 4px; margin-top: 14px; }
+.login-links .btn.ghost { min-height: 40px; font-size: 14px; }
+.invite-id { text-align: center; padding: 14px; border-radius: 14px; background: var(--green-soft); margin: 4px 0 6px; }
+.invite-id b { font-size: 28px; letter-spacing: .02em; color: var(--green-ink); }
+
 /* ---------- iOS "add to home screen" hint ---------- */
 .install-hint {
   margin: calc(8px + env(safe-area-inset-top)) 14px 0;
@@ -390,7 +404,7 @@ details.more[open] summary::before { content: "▾ "; }
 <input type="file" id="pick-gallery" accept="image/*" multiple hidden>
 <input type="file" id="pick-json" accept=".json,application/json" hidden>
 <script>
-window.MEDKIT_CONFIG = { mode: 'web', build: '20261108162842', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
+window.MEDKIT_CONFIG = { mode: 'web', build: '20261108175816', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
   lib: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
   workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
   corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
@@ -410,6 +424,8 @@ var NATIVE = false; // true when the Android local server answers /api/ping
 var APP_INFO = { ocr: 'tesseract' };
 // where the installable web version (iPhone) lives; the build scripts override it through MEDKIT_CONFIG
 var WEB_BASE_URL = (window.MEDKIT_CONFIG && MEDKIT_CONFIG.webBaseUrl) || 'https://plan-t-kty.github.io/medkit-web/';
+// team server (Apps Script) baked in at build time; otherwise discovered from <WEB_BASE_URL>/server.json
+var SERVER_URL = (window.MEDKIT_CONFIG && MEDKIT_CONFIG.serverUrl) || '';
 function isIos() { return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
 function isStandalone() { return !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)); }
 
@@ -607,8 +623,16 @@ function loadDb() {
     if (MODE === 'gas' && !DB.settings.sync) DB.settings.sync = { url: 'gas', lastPull: 0 };
     // PWA opened through a team link: ...?team=<apps script url> connects this browser to the shared sheet
     if (MODE === 'web') {
-      var tm = location.search.match(/[?&]team=([^&]+)/);
-      if (tm) { try { var turl = decodeURIComponent(tm[1]); if (validTeamUrl(turl) && (!DB.settings.sync || DB.settings.sync.url !== turl)) { DB.settings.sync = { url: turl, lastPull: 0 }; DB.drugs.forEach(function (r) { r._dirty = true; }); DB.bags.forEach(function (r) { r._dirty = true; }); UI.joinedViaLink = true; } } catch (e) { } }
+      var tm = location.search.match(/[?&]team=([^&]+)/), im = location.search.match(/[?&]id=([^&]+)/);
+      if (tm) {
+        try {
+          var turl = decodeURIComponent(tm[1]), tid = im ? normTeamId(decodeURIComponent(im[1])) : '';
+          if (validTeamUrl(turl)) {
+            if (tid) { if (!DB.settings.sync || DB.settings.sync.teamId !== tid) UI.loginPrefill = { url: turl, id: tid }; }
+            else if (!DB.settings.sync || DB.settings.sync.url !== turl) { DB.settings.sync = { url: turl, lastPull: 0 }; DB.drugs.forEach(function (r) { r._dirty = true; }); DB.bags.forEach(function (r) { r._dirty = true; }); UI.joinedViaLink = true; }
+          }
+        } catch (e) { }
+      }
     }
     return DB;
   });
@@ -624,7 +648,7 @@ function syncTeamToLocation() {
   var sy = DB.settings && DB.settings.sync, link = qs('link[rel="manifest"]');
   try {
     if (sy && sy.url) {
-      var want = '?team=' + encodeURIComponent(sy.url);
+      var want = '?team=' + encodeURIComponent(sy.url) + (sy.teamId ? '&id=' + encodeURIComponent(sy.teamId) : '');
       if (location.search !== want) history.replaceState(null, '', location.pathname + want + location.hash);
       if (link) {
         var base = location.href.split(/[?#]/)[0], dir = base.slice(0, base.lastIndexOf('/') + 1), start = base + want;
@@ -653,18 +677,102 @@ function removeBag(id) { var r = DB.bags.filter(function (b) { return b.id === i
 var SYNC = { inflight: false, timer: null, status: 'off', message: '', lastOk: 0, periodic: null };
 function syncConfigured() { return MODE === 'gas' || !!(DB.settings && DB.settings.sync && DB.settings.sync.url); }
 function syncUrl() { return DB.settings.sync ? DB.settings.sync.url : ''; }
-/** Call the shared backend. action: ping|pull|push|photo|search|detail */
+/** team login credentials (sent with every call once logged in) */
+function teamParams() { var sy = DB.settings && DB.settings.sync; return sy && sy.teamId ? { team: sy.teamId, auth: sy.auth } : {}; }
+/** Call the shared backend of the connected team. action: ping|pull|push|photo|search|detail|team* */
 function remoteCall(action, params, body) {
-  if (MODE === 'gas') return gasCall(action, Object.assign({}, params || {}, body || {}));
-  var url = syncUrl();
+  var url = MODE === 'gas' ? 'gas' : syncUrl();
   if (!url) return Promise.reject(new Error('팀 공유가 설정되지 않았어요'));
+  return remoteCallTo(url, action, Object.assign({}, teamParams(), params || {}), body);
+}
+/** Call a specific Apps Script server (used by login before anything is saved). */
+function remoteCallTo(url, action, params, body) {
+  if (MODE === 'gas' || url === 'gas') return gasCall(action, Object.assign({}, params || {}, body || {}));
   if (NATIVE) return apiJson('/api/sync', { method: 'POST', body: JSON.stringify({ url: url, action: action, params: params || {}, body: body || null }), headers: { 'Content-Type': 'application/json' } });
-  // plain web preview: talk to Apps Script directly (text/plain POST avoids a CORS preflight)
+  // plain web: talk to Apps Script directly (text/plain POST avoids a CORS preflight)
   var qsStr = Object.keys(params || {}).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
-  var req = body || action === 'push' || action === 'photo'
+  var req = body || action === 'push' || action === 'photo' || action === 'teamCreate' || action === 'teamPassword'
     ? fetch(url, { method: 'POST', body: JSON.stringify(Object.assign({ action: action }, params || {}, body || {})), headers: { 'Content-Type': 'text/plain;charset=utf-8' } })
     : fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 'action=' + action + (qsStr ? '&' + qsStr : ''));
   return req.then(function (r) { return r.text(); }).then(function (t) { try { return JSON.parse(t); } catch (e) { throw new Error('공유 서버 응답이 JSON이 아니에요 (웹 앱 URL과 배포 설정을 확인하세요)'); } });
+}
+function remoteError(res, fallback) { var e = new Error(res && res.error || fallback); if (res && res.code) e.code = res.code; return e; }
+
+/* ---------- team accounts (login) ---------- */
+// SHA-256 (hex) — small pure-JS version so it works in every WebView; the server only ever sees this hash
+function sha256Hex(str) {
+  function rotr(n, x) { return (x >>> n) | (x << (32 - n)); }
+  var K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+  var H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+  var bytes = unescape(encodeURIComponent(str)), l = bytes.length, words = [];
+  for (var i = 0; i < l; i++) words[i >> 2] |= (bytes.charCodeAt(i) & 0xff) << (24 - (i % 4) * 8);
+  words[l >> 2] |= 0x80 << (24 - (l % 4) * 8);
+  words[(((l + 8) >> 6) << 4) + 15] = l * 8;
+  var W = new Array(64);
+  for (var j = 0; j < words.length; j += 16) {
+    var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], hh = H[7];
+    for (var t = 0; t < 64; t++) {
+      if (t < 16) W[t] = words[j + t] | 0;
+      else { var w15 = W[t - 15], w2 = W[t - 2]; W[t] = ((rotr(17, w2) ^ rotr(19, w2) ^ (w2 >>> 10)) + W[t - 7] + (rotr(7, w15) ^ rotr(18, w15) ^ (w15 >>> 3)) + W[t - 16]) | 0; }
+      var t1 = (hh + (rotr(6, e) ^ rotr(11, e) ^ rotr(25, e)) + ((e & f) ^ (~e & g)) + K[t] + W[t]) | 0;
+      var t2 = ((rotr(2, a) ^ rotr(13, a) ^ rotr(22, a)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0; H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + hh) | 0;
+  }
+  return H.map(function (x) { return ('00000000' + (x >>> 0).toString(16)).slice(-8); }).join('');
+}
+function teamAuth(id, pw) { return sha256Hex(String(id).trim().toLowerCase() + ':' + String(pw)); }
+function normTeamId(id) { var t = String(id || '').trim().toLowerCase(); return /^[a-z0-9][a-z0-9_-]{1,19}$/.test(t) ? t : ''; }
+/** Finds the team server: build-time config → cached → <WEB_BASE_URL>server.json (through the app's Java side when native). */
+function discoverServer(force) {
+  if (MODE === 'gas') return Promise.resolve({ url: 'gas', name: (DB.settings.sync && DB.settings.sync.name) || '' });
+  if (SERVER_URL) return Promise.resolve({ url: SERVER_URL, name: '' });
+  var cached = DB.settings.server;
+  if (!force && cached && cached.url && Date.now() - (cached.at || 0) < 86400000) return Promise.resolve(cached);
+  var src = WEB_BASE_URL + 'server.json';
+  var p = NATIVE ? apiJson('/api/server?src=' + encodeURIComponent(src))
+    : fetch(src + '?_=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  return p.then(function (j) {
+    if (!j || !j.url || !validTeamUrl(j.url)) throw new Error('서버 주소가 아직 등록되지 않았어요');
+    DB.settings.server = { url: j.url, name: j.name || '', at: Date.now() }; save();
+    return DB.settings.server;
+  }).catch(function (e) { if (cached && cached.url) return cached; throw e; });
+}
+function teamLogin(url, id, pw) {
+  var tid = normTeamId(id);
+  if (!tid) return Promise.reject(new Error('팀 아이디는 영문 소문자·숫자 2~20자예요'));
+  if (!pw) return Promise.reject(new Error('비밀번호를 입력하세요'));
+  var auth = teamAuth(tid, pw);
+  return remoteCallTo(url, 'teamLogin', { id: tid, auth: auth }).then(function (res) {
+    if (!res || !res.ok) throw remoteError(res, '로그인 실패');
+    connectTeam(url, res.team, auth); return res.team;
+  });
+}
+function teamCreate(url, id, name, pw) {
+  var tid = normTeamId(id);
+  if (!tid) return Promise.reject(new Error('팀 아이디는 영문 소문자·숫자 2~20자예요 (-, _ 가능)'));
+  if (!pw || pw.length < 4) return Promise.reject(new Error('비밀번호는 4자 이상으로'));
+  var auth = teamAuth(tid, pw);
+  return remoteCallTo(url, 'teamCreate', { id: tid, name: name || tid, auth: auth }).then(function (res) {
+    if (!res || !res.ok) throw remoteError(res, '팀 만들기 실패');
+    connectTeam(url, res.team, auth); return res;
+  });
+}
+/** Logged in: from now on this device syncs with that team's sheets. Records already on the device are uploaded. */
+function connectTeam(url, team, auth) {
+  var prev = DB.settings.sync || {};
+  DB.settings.sync = { url: url, teamId: team.id, auth: auth, name: team.name || team.id, sheetUrl: team.sheetUrl || prev.sheetUrl || '', serverName: team.sheetName || prev.serverName || '', lastPull: 0 };
+  DB.settings.skipLogin = false;
+  DB.drugs.forEach(function (r) { r._dirty = true; }); DB.bags.forEach(function (r) { r._dirty = true; });
+  save(); setSyncStatus('off'); startPeriodicSync(); syncTeamToLocation();
+}
+/** Logout: the team's data stays in the sheet; this device is emptied so another team can log in. */
+function logoutTeam() {
+  DB.drugs.forEach(function (d) { if (d.photo) deletePhoto(d.photo); });
+  DB.bags.forEach(function (b) { (b.photos || []).forEach(deletePhoto); });
+  DB.drugs = []; DB.bags = []; DB.photoLocal = {}; DB.settings.sync = null; DB.settings.skipLogin = false;
+  save(); setSyncStatus('off'); startPeriodicSync(); syncTeamToLocation(); render();
 }
 function setSyncStatus(status, message) {
   SYNC.status = status; SYNC.message = message || '';
@@ -699,7 +807,7 @@ function uploadLocalPhotos(records, field, multi) {
       if (!ref || ref.slice(0, 2) === 'g:' || ref.slice(0, 5) === 'data:') return;
       chain = chain.then(function () {
         var up = NATIVE
-          ? apiJson('/api/sync/photo', { method: 'POST', body: JSON.stringify({ url: syncUrl(), id: ref }), headers: { 'Content-Type': 'application/json' } })
+          ? apiJson('/api/sync/photo', { method: 'POST', body: JSON.stringify({ url: syncUrl(), id: ref, params: teamParams() }), headers: { 'Content-Type': 'application/json' } })
           : Promise.resolve({ ok: false, error: 'no local file' });
         return up.then(function (j) {
           if (j && j.ok && j.id) { DB.photoLocal[j.id] = ref; if (multi) rec[field][idx] = j.id; else rec[field] = j.id; rec._dirty = true; }
@@ -741,7 +849,7 @@ function syncNow(opts) {
   return uploadLocalPhotos(dirtyDrugs, 'photo', false).then(function () { return uploadLocalPhotos(dirtyBags, 'photos', true); }).then(function () {
     if (!dirtyDrugs.length && !dirtyBags.length) return null;
     return remoteCall('push', {}, { drugs: dirtyDrugs.map(stripLocal), bags: dirtyBags.map(stripLocal) }).then(function (res) {
-      if (!res || !res.ok) throw new Error(res && res.error || '업로드 실패');
+      if (!res || !res.ok) throw remoteError(res, '업로드 실패');
       var applied = {}; (res.applied || []).forEach(function (id) { applied[id] = 1; });
       dirtyDrugs.concat(dirtyBags).forEach(function (r) { if (applied[r.id]) delete r._dirty; });
       (res.rejected || []).forEach(function (rj) { var r = DB.drugs.concat(DB.bags).filter(function (x) { return x.id === rj.id; })[0]; if (r) delete r._dirty; }); // server copy is newer: pull will bring it
@@ -750,7 +858,7 @@ function syncNow(opts) {
   }).then(function () {
     return remoteCall('pull', { since: since });
   }).then(function (res) {
-    if (!res || !res.ok) throw new Error(res && res.error || '내려받기 실패');
+    if (!res || !res.ok) throw remoteError(res, '내려받기 실패');
     var changed = mergeIncoming(DB.drugs, res.drugs || []) + mergeIncoming(DB.bags, res.bags || []);
     DB.settings.sync.lastPull = res.time || Date.now();
     purgeTombstones();
@@ -762,7 +870,10 @@ function syncNow(opts) {
   }).catch(function (e) {
     SYNC.inflight = false;
     setSyncStatus('error', String(e && e.message || e));
-    if (opts.manual) toast('동기화 실패: ' + (e && e.message || e));
+    if (e && e.code === 'auth' && DB.settings.sync && DB.settings.sync.teamId && typeof openLoginSheet === 'function' && !UI.loginOpen) {
+      // password changed or team removed: ask again (data stays on the device until the login succeeds)
+      openLoginSheet({ reason: e.message, id: DB.settings.sync.teamId, url: DB.settings.sync.url });
+    } else if (opts.manual) toast('동기화 실패: ' + (e && e.message || e));
     return false;
   });
 }
@@ -960,24 +1071,54 @@ function scheduleSearch() {
   UI.searching = true;
   searchTimer = setTimeout(function () { runSearch(false); }, 650);
 }
+var SEARCH_PAGE = 50;
+function normName(s) { return String(s || '').replace(/\s+/g, '').toLowerCase(); }
+/** 약학정보원 is asked for the first word; further words narrow the loaded results (name · company · ingredient · form). */
+function splitQuery(q) { var t = q.trim().split(/\s+/).filter(Boolean); return { api: t[0] || '', extra: t.slice(1).map(normName) }; }
+function filterResults(items, extra) {
+  if (!extra.length) return items;
+  return items.filter(function (it) {
+    var hay = normName([it.drug_name, it.upso_name_kfda, it.list_sunb_name, it.ingr_mg, it.drug_form, it.cls_name].join(' '));
+    return extra.every(function (t) { return hay.indexOf(t) >= 0; });
+  });
+}
+function rankResults(items, q) {
+  var nq = normName(q);
+  var score = function (it) { var n = normName(it.drug_name); if (n === nq) return 0; if (n.indexOf(nq) === 0) return 1; if (n.indexOf(nq) >= 0) return 2; return 3; };
+  return items.map(function (it, i) { return { it: it, s: score(it), i: i }; }).sort(function (a, b) { return a.s - b.s || a.i - b.i; }).map(function (x) { return x.it; });
+}
 function runSearch(force) {
   clearTimeout(searchTimer);
   var q = UI.query.trim();
   if (q.length < (force ? 1 : 2)) return;
   var seq = ++searchSeq;
-  UI.searching = true; UI.searchError = '';
+  UI.searching = true; UI.searchError = ''; UI.resultsRaw = []; UI.resultsPage = 0; UI.resultsPages = 1; UI.resultsTotal = 0; UI.loadingMore = false;
   renderDrugBody();
-  apiJson('/api/search?q=' + encodeURIComponent(q)).then(function (j) {
+  loadSearchPage(seq, 1);
+}
+function loadSearchPage(seq, page) {
+  var parts = splitQuery(UI.query);
+  if (page > 1) { UI.loadingMore = true; renderDrugBody(); }
+  apiJson('/api/search?q=' + encodeURIComponent(parts.api) + '&page=' + page + '&limit=' + SEARCH_PAGE).then(function (j) {
     if (seq !== searchSeq) return;
-    UI.searching = false;
-    if (j.error) { UI.searchError = j.error; UI.results = []; }
-    else { UI.results = j.items || []; UI.resultsTotal = j.total || UI.results.length; }
+    UI.searching = false; UI.loadingMore = false;
+    if (j.error) { UI.searchError = j.error; UI.results = []; renderDrugBody(); return; }
+    var items = j.items || [], limit = Number(j.limit) || SEARCH_PAGE;
+    UI.resultsRaw = (UI.resultsRaw || []).concat(items);
+    UI.resultsTotal = Number(j.total) || UI.resultsRaw.length;
+    UI.resultsPage = page;
+    UI.resultsPages = Number(j.totalPages) || Math.max(1, Math.ceil(UI.resultsTotal / limit));
+    if (!items.length) UI.resultsPages = page; // server returned nothing more
+    UI.results = rankResults(filterResults(UI.resultsRaw, parts.extra), parts.api);
     renderDrugBody();
+    // narrowing words: keep loading quietly until there is something to show (at most 6 pages)
+    if (parts.extra.length && UI.results.length < 10 && page < UI.resultsPages && page < 6) loadSearchPage(seq, page + 1);
   }).catch(function (e) {
     if (seq !== searchSeq) return;
-    UI.searching = false; UI.searchError = String(e && e.message || e); UI.results = []; renderDrugBody();
+    UI.searching = false; UI.loadingMore = false; UI.searchError = String(e && e.message || e); if (!UI.resultsRaw.length) UI.results = []; renderDrugBody();
   });
 }
+function loadMoreResults() { if (UI.loadingMore || UI.resultsPage >= UI.resultsPages) return; loadSearchPage(searchSeq, UI.resultsPage + 1); }
 
 function inventoryGroups(filterFn) {
   var map = {}, order = [];
@@ -1012,7 +1153,8 @@ function renderDrugBody() {
       h('h2', null, '아직 등록된 약이 없어요'),
       h('p', null, '위 검색창에 약 이름을 치거나 📷 로 약 상자를 찍으면 약학정보원 정보로 바로 추가할 수 있어요.'),
       h('div', { class: 'actions' },
-        MODE !== 'gas' ? h('button', { class: 'btn primary', onclick: function () { importSeed(); } }, '엑셀 원본 리스트 (164건) 불러오기') : null,
+        !syncConfigured() ? h('button', { class: 'btn primary', onclick: function () { openLoginSheet({}); } }, '팀 로그인 — 팀 목록 불러오기') : null,
+        MODE !== 'gas' ? h('button', { class: (!syncConfigured() ? 'btn' : 'btn primary'), onclick: function () { importSeed(); } }, '엑셀 원본 리스트 (164건) 불러오기') : null,
         h('button', { class: 'btn', onclick: function () { openAddSheet({}, { mode: 'add' }); } }, '직접 입력으로 추가'))));
     return;
   }
@@ -1056,8 +1198,14 @@ function renderSearchMode(body, q) {
     inv.slice(0, 20).forEach(function (g) { l1.appendChild(groupCard(g)); });
     body.appendChild(l1);
   }
-  var title = h('div', { class: 'section-title' }, '약학정보원 검색', UI.searching ? h('span', { class: 'spinner' }) : null,
-    h('span', { class: 'src' }, UI.results && !UI.searching ? (UI.resultsTotal || UI.results.length) + '건' : ''));
+  var parts = splitQuery(q), shown = UI.results ? UI.results.length : 0, loaded = (UI.resultsRaw || []).length;
+  var countTxt = '';
+  if (UI.results && !UI.searching) {
+    countTxt = fmtNum(UI.resultsTotal || loaded) + '건';
+    if (parts.extra.length) countTxt += ' 중 "' + parts.extra.join(' ') + '" 포함 ' + shown + '건';
+    else if (UI.resultsTotal > loaded) countTxt += ' 중 ' + loaded + '건 표시';
+  }
+  var title = h('div', { class: 'section-title' }, '약학정보원 검색', UI.searching ? h('span', { class: 'spinner' }) : null, h('span', { class: 'src' }, countTxt));
   body.appendChild(title);
   if (q.length < 2 && !UI.results) { body.appendChild(h('div', { class: 'notice' }, '두 글자 이상 입력하면 자동으로 검색합니다.')); return; }
   if (UI.searchError) {
@@ -1067,10 +1215,17 @@ function renderSearchMode(body, q) {
   }
   if (!UI.results) { if (!UI.searching) body.appendChild(h('div', { class: 'notice' }, '검색 중…')); return; }
   if (!UI.results.length) {
-    body.appendChild(h('div', { class: 'notice' }, '약학정보원에 "' + q + '" 검색 결과가 없어요. 띄어쓰기를 빼거나 앞 두세 글자만 넣어 보세요.'));
-    body.appendChild(h('div', { class: 'list' }, h('button', { class: 'btn', onclick: function () { openAddSheet({ name: q }, { mode: 'add' }); } }, '"' + q + '" 직접 입력으로 추가')));
+    if (UI.loadingMore) { body.appendChild(h('div', { class: 'notice' }, h('span', { class: 'spinner' }), ' "' + parts.api + '" 결과 ' + fmtNum(UI.resultsTotal) + '건에서 "' + parts.extra.join(' ') + '" 찾는 중…')); return; }
+    var more = UI.resultsPage < UI.resultsPages;
+    body.appendChild(h('div', { class: 'notice' }, parts.extra.length
+      ? '"' + parts.api + '" 결과 ' + fmtNum(UI.resultsTotal) + '건 중 불러온 ' + loaded + '건에는 "' + parts.extra.join(' ') + '" 가 없어요.' + (more ? ' 더 불러와서 계속 찾을 수 있어요.' : '')
+      : '약학정보원에 "' + q + '" 검색 결과가 없어요. 띄어쓰기를 빼거나 앞 두세 글자만 넣어 보세요.'));
+    body.appendChild(h('div', { class: 'list' },
+      more ? h('button', { class: 'btn primary', onclick: function () { loadMoreResults(); } }, '더 불러와서 찾기') : null,
+      h('button', { class: 'btn', onclick: function () { openAddSheet({ name: q }, { mode: 'add' }); } }, '"' + q + '" 직접 입력으로 추가')));
     return;
   }
+  if (UI.resultsTotal > 100 && !parts.extra.length) body.appendChild(h('div', { class: 'notice', style: 'margin-top:0' }, '결과가 ' + fmtNum(UI.resultsTotal) + '건이나 돼요 — 한 칸 띄우고 함량이나 회사명을 덧붙이면 좁혀져요. 예: "' + parts.api + ' 500"'));
   var list = h('div', { class: 'list' });
   UI.results.forEach(function (it) {
     var inInv = liveDrugs().some(function (d) { return d.code === it.drug_code; });
@@ -1082,6 +1237,11 @@ function renderSearchMode(body, q) {
           h('div', { class: 'r-sub' }, [it.cls_name, it.drug_class].filter(Boolean).join(' · '))),
         h('div', { class: 'r-side' }, it.drug_form || ''))));
   });
+  if (UI.resultsPage < UI.resultsPages) {
+    var left = Math.max(0, UI.resultsTotal - loaded);
+    list.appendChild(h('button', { class: 'btn', disabled: UI.loadingMore, onclick: function () { loadMoreResults(); } },
+      UI.loadingMore ? h('span', { class: 'spinner' }) : null, UI.loadingMore ? ' 불러오는 중…' : '결과 더 보기 (' + fmtNum(Math.min(SEARCH_PAGE, left)) + '건 더 · 남은 ' + fmtNum(left) + '건)'));
+  }
   body.appendChild(list);
 }
 
@@ -1608,12 +1768,23 @@ function renderMore(root) {
   function item(ic, t, d, fn) { return h('button', { class: 'card', onclick: fn }, h('span', { class: 'm-ic' }, ic), h('span', { style: 'min-width:0' }, h('div', { class: 'm-t' }, t), h('div', { class: 'm-d' }, d))); }
 
   // ----- team sharing -----
-  menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '팀 공유 (Google 시트)'));
+  menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '팀 (로그인 · Google 시트)'));
   var sy = DB.settings.sync;
-  if (MODE === 'gas') {
+  var syncDesc = (SYNC.lastOk ? '마지막 동기화 ' + fmtTime(SYNC.lastOk) : '아직 동기화 전') + (SYNC.status === 'error' ? ' · 실패: ' + SYNC.message : '') + ' · 탭하여 지금 동기화';
+  if (sy && sy.teamId) {
+    menu.appendChild(item('👥', (sy.name || sy.teamId) + ' 에 로그인됨', '아이디 ' + sy.teamId + ' · ' + syncDesc, function () { syncNow({ manual: true }); }));
+    menu.appendChild(item('✉️', '팀원 초대하기', '아이디를 알려주면 각자 로그인해서 같은 목록을 봐요 · 아이폰용 링크 포함', function () { openTeamInvite(); }));
+    if (sy.sheetUrl) menu.appendChild(item('📄', 'Google 시트 열기', '전체 표 보기 · 엑셀로 내려받기 (파일 → 다운로드)', function () { openExternalLink(sy.sheetUrl); }));
+    menu.appendChild(item('🔑', '팀 비밀번호 바꾸기', '바꾸면 팀원들은 다시 로그인해야 해요', function () { openChangePassword(); }));
+    menu.appendChild(item('🚪', '로그아웃', '팀 목록은 시트에 그대로 남고, 이 기기만 비워져요', function () {
+      confirmSheet('로그아웃', '이 기기의 목록을 비우고 로그아웃합니다. 팀 데이터는 Google 시트에 그대로 있어서 다시 로그인하면 돌아와요.' + (DB.drugs.concat(DB.bags).some(function (r) { return r._dirty; }) ? '\n\n⚠ 아직 올라가지 않은 변경이 있어요. 먼저 동기화를 해 주세요.' : ''), '로그아웃', true).then(function (ok) { if (!ok) return; logoutTeam(); toast('로그아웃했어요'); openLoginSheet({}); });
+    }));
+  } else if (MODE === 'gas') {
     menu.appendChild(item('☁️', '이 화면은 공유 시트와 직접 연결되어 있어요', (sy && sy.name ? sy.name + ' · ' : '') + '변경 사항은 모두에게 바로 반영됩니다', function () { syncNow({ manual: true }); }));
+    menu.appendChild(item('🔐', '팀 로그인', '팀 아이디로 로그인하면 그 팀의 목록으로 바뀝니다', function () { openLoginSheet({}); }));
     if (sy && sy.sheetUrl) menu.appendChild(item('📄', 'Google 시트 열기', '전체 표를 보거나 엑셀로 내려받기 (파일 → 다운로드)', function () { openExternalLink(sy.sheetUrl); }));
   } else if (syncConfigured()) {
+    menu.appendChild(item('🔐', '팀 로그인으로 전환', '지금은 주소로만 연결된 상태예요 · 팀 아이디/비밀번호를 만들면 팀원들은 아이디만으로 들어올 수 있어요', function () { openLoginSheet({ url: sy.url }); }));
     menu.appendChild(item('☁️', (sy.name || '공유 시트') + ' 에 연결됨', (SYNC.lastOk ? '마지막 동기화 ' + fmtTime(SYNC.lastOk) : '아직 동기화 전') + (SYNC.status === 'error' ? ' · 실패: ' + SYNC.message : '') + ' · 탭하여 지금 동기화', function () { syncNow({ manual: true }); }));
     if (sy.sheetUrl) menu.appendChild(item('📄', 'Google 시트 열기', '팀원에게 이 시트 링크를 보내면 누구나 바로 볼 수 있어요', function () { openExternalLink(sy.sheetUrl); }));
     menu.appendChild(item('🔗', '팀 초대 링크 보기', '같은 주소를 넣은 모든 앱이 같은 목록을 공유합니다 · 설치 없이 쓰는 웹 버전 주소이기도 해요', function () { openShareInfo(); }));
@@ -1621,7 +1792,8 @@ function renderMore(root) {
       confirmSheet('공유 연결 끊기', '이 기기는 더 이상 팀 시트와 동기화하지 않아요. 기기 안의 목록은 유지됩니다.', '끊기', true).then(function (ok) { if (!ok) return; DB.settings.sync = null; DB.drugs = liveDrugs(); DB.bags = liveBags(); save(); setSyncStatus('off'); startPeriodicSync(); syncTeamToLocation(); render(); toast('연결을 끊었어요'); });
     }));
   } else {
-    menu.appendChild(item('☁️', '팀 공유 연결하기', 'Google 시트 하나를 팀 저장소로 쓰면 모두가 같은 목록을 보고 고칠 수 있어요', function () { openSyncSetup(); }));
+    menu.appendChild(item('🔐', '팀 로그인', '팀 아이디와 비밀번호로 로그인하면 모두 같은 목록을 봐요 · 새 팀 만들기도 여기서', function () { openLoginSheet({}); }));
+    menu.appendChild(item('☁️', '주소로 직접 연결 (고급)', 'Apps Script 웹 앱 주소를 붙여넣어 연결', function () { openSyncSetup(); }));
   }
 
   // ----- export -----
@@ -1806,6 +1978,188 @@ function importBackup() {
     r.readAsText(f);
   };
   input.click();
+}
+
+/* login.js — team accounts: log in with a team ID + password, create a team, invite, change password, log out */
+'use strict';
+
+/** At startup: anyone who is not connected yet gets the login screen (can be skipped → device-only mode). */
+function ensureLogin() {
+  if (UI.loginPrefill) { var pf = UI.loginPrefill; UI.loginPrefill = null; openLoginSheet({ url: pf.url, id: pf.id, fromLink: true }); return; }
+  if (DB.settings.sync && (DB.settings.sync.teamId || DB.settings.sync.url)) return; // logged in or connected by address
+  if (DB.settings.skipLogin) return;
+  openLoginSheet({});
+}
+
+function friendlyServerError(e) {
+  var msg = String(e && e.message || e);
+  if (/unknown action/.test(msg)) return '서버(Apps Script)가 예전 버전이에요 — 팀 대표가 새 Code.gs를 붙여넣고 "새 버전"으로 배포해야 로그인을 쓸 수 있어요';
+  if (/JSON|권한|Authorization/.test(msg)) return msg;
+  return msg;
+}
+/** "…?team=<url>&id=<team>" anywhere in a pasted text → { url, id } */
+function parseInvite(text) {
+  var m = /[?&]team=([^&\s]+)/.exec(String(text || ''));
+  if (!m) { var idm = /아이디[:\s]+([A-Za-z0-9_-]{2,20})/.exec(String(text || '')); return idm && String(text).length > 24 ? { url: '', id: normTeamId(idm[1]) } : null; }
+  var url = ''; try { url = decodeURIComponent(m[1]); } catch (e) { url = m[1]; }
+  var im = /[?&]id=([^&\s]+)/.exec(String(text)), id = '';
+  if (im) { try { id = normTeamId(decodeURIComponent(im[1])); } catch (e) { } }
+  return { url: validTeamUrl(url) ? url : '', id: id };
+}
+function serverLine(status, state) {
+  status.textContent = '';
+  if (state.loading) { status.appendChild(h('span', { class: 'spinner' })); status.appendChild(document.createTextNode(' 서버 확인 중…')); return; }
+  if (state.url) { status.textContent = '서버: ' + (state.name || (state.url === 'gas' ? '이 시트' : state.url.replace(/^https:\/\/script\.google\.com\/(macros|a\/macros\/[^/]+)\/s\//, '…/').slice(0, 40))) + ' ✓'; status.className = 'help ok'; return; }
+  status.textContent = state.error || '서버 주소를 찾지 못했어요'; status.className = 'help bad';
+}
+
+/** opts: { url, id, reason, fromLink } */
+function openLoginSheet(opts) {
+  opts = opts || {};
+  if (UI.loginOpen) return;
+  UI.loginOpen = true;
+  var server = { url: opts.url || '', name: '', loading: !opts.url, error: '' };
+  var id = opts.id || (DB.settings.sync && DB.settings.sync.teamId) || '', pw = '';
+  var ctx = openSheet({
+    title: '팀 로그인', full: true,
+    render: function (c) {
+      var b = c.body;
+      b.appendChild(h('div', { class: 'login-hero' }, h('div', { class: 'login-ic' }, '💊'), h('h2', null, '선교약품'), h('p', null, '팀 아이디와 비밀번호를 넣으면 팀원 모두 같은 약품·짐 목록을 봅니다.')));
+      if (opts.reason) b.appendChild(h('div', { class: 'notice err' }, opts.reason + ' — 다시 로그인해 주세요.'));
+      var status = h('div', { class: 'help', id: 'login-server' });
+      b.appendChild(h('div', { class: 'field' },
+        h('label', { for: 'login-id' }, '팀 아이디'),
+        h('input', { id: 'login-id', value: id, placeholder: '예: ph2026 (초대 문구를 통째로 붙여넣어도 돼요)', autocapitalize: 'off', autocomplete: 'username', autocorrect: 'off', spellcheck: false,
+          oninput: function (e) {
+            id = e.target.value;
+            // a pasted invite (link or whole message) carries the server address and the team id
+            var inv = parseInvite(id);
+            if (inv) { if (inv.url) { server = { url: inv.url, name: '', loading: false }; serverLine(status, server); } id = inv.id || ''; e.target.value = id; toast('초대 문구를 읽었어요 — 비밀번호만 넣으면 돼요'); var n = qs('#login-pw'); if (n) n.focus(); }
+          }, onkeydown: function (e) { if (e.key === 'Enter') { e.preventDefault(); var n = qs('#login-pw'); if (n) n.focus(); } } })));
+      b.appendChild(h('div', { class: 'field' },
+        h('label', { for: 'login-pw' }, '비밀번호'),
+        h('div', { class: 'pw-row' },
+          h('input', { id: 'login-pw', type: 'password', placeholder: '팀 비밀번호', autocomplete: 'current-password', oninput: function (e) { pw = e.target.value; }, onkeydown: function (e) { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } } }),
+          h('button', { class: 'btn sm', type: 'button', onclick: function () { var i = qs('#login-pw'); i.type = i.type === 'password' ? 'text' : 'password'; } }, '보기')),
+        h('div', { class: 'help', id: 'login-help' })));
+      b.appendChild(h('button', { class: 'btn primary big', id: 'login-go', onclick: doLogin }, '로그인'));
+      b.appendChild(status);
+      b.appendChild(h('div', { class: 'login-links' },
+        h('button', { class: 'btn ghost', onclick: function () { openCreateTeamSheet(server, function () { c.close(); }); } }, '새 팀 만들기'),
+        h('button', { class: 'btn ghost', onclick: function () { c.close(); openSyncSetup(); } }, '주소로 직접 연결'),
+        h('button', { class: 'btn ghost', onclick: function () { DB.settings.skipLogin = true; save(); c.close(); toast('로그인 없이 이 기기에서만 기록해요 · 더보기에서 언제든 로그인'); } }, '로그인 없이 쓰기')));
+      if (!opts.url && MODE !== 'gas' && !SERVER_URL) {
+        b.appendChild(h('details', { class: 'more' }, h('summary', null, '서버 주소를 직접 넣기 (고급)'),
+          h('div', { class: 'field' }, h('input', { placeholder: 'https://script.google.com/macros/s/…/exec', inputmode: 'url', autocapitalize: 'off', autocomplete: 'off',
+            oninput: function (e) { var v = e.target.value.trim(); if (validTeamUrl(v)) { server = { url: v, name: '', loading: false }; serverLine(status, server); } } }),
+            h('div', { class: 'help' }, '보통은 자동으로 찾기 때문에 비워 두면 됩니다.'))));
+      }
+      serverLine(status, server);
+      if (!server.url) {
+        discoverServer(false).then(function (sv) { server = { url: sv.url, name: sv.name, loading: false }; serverLine(status, server); })
+          .catch(function (e) { server.loading = false; server.error = '서버 주소를 찾지 못했어요 (' + (e && e.message || e) + ') — 인터넷을 확인하거나 아래 고급에서 주소를 넣어 주세요'; serverLine(status, server); });
+      }
+      setTimeout(function () { var i = qs(id ? '#login-pw' : '#login-id'); if (i) i.focus(); }, 120);
+    },
+    onClose: function () { UI.loginOpen = false; if (!syncConfigured() && !DB.settings.skipLogin) { DB.settings.skipLogin = true; save(); } render(); }
+  });
+  function doLogin() {
+    var help = qs('#login-help'), btn = qs('#login-go');
+    if (!server.url) { help.textContent = '서버 주소를 아직 못 찾았어요 — 잠시 후 다시 시도'; help.className = 'help bad'; return; }
+    help.textContent = '확인 중…'; help.className = 'help'; btn.disabled = true;
+    teamLogin(server.url, id, pw).then(function (team) {
+      ctx.close();
+      toast('로그인됨: ' + (team.name || team.id) + ' — 목록 내려받는 중…');
+      return syncNow({ manual: false }).then(function () { render(); });
+    }).catch(function (e) {
+      btn.disabled = false;
+      help.textContent = friendlyServerError(e); help.className = 'help bad';
+    });
+  }
+}
+
+function openCreateTeamSheet(server, onDone) {
+  var id = '', name = '', pw = '', pw2 = '';
+  openSheet({
+    title: '새 팀 만들기',
+    render: function (c) {
+      var b = c.body;
+      b.appendChild(h('p', { class: 'muted', style: 'margin:4px 0 8px;font-size:14px' }, '팀 대표가 한 번만 만들면 돼요. 아이디와 비밀번호를 팀원에게 알려주면 각자 로그인해서 같은 목록을 봅니다.'));
+      b.appendChild(h('div', { class: 'field' }, h('label', { for: 'ct-id' }, '팀 아이디 ', h('span', { class: 'hint' }, '영문 소문자·숫자 2~20자')),
+        h('input', { id: 'ct-id', placeholder: '예: ph2026', autocapitalize: 'off', autocomplete: 'off', autocorrect: 'off', spellcheck: false, oninput: function (e) { id = e.target.value; } })));
+      b.appendChild(h('div', { class: 'field' }, h('label', { for: 'ct-name' }, '팀 이름'),
+        h('input', { id: 'ct-name', placeholder: '예: 2026 필리핀 의료선교', oninput: function (e) { name = e.target.value; } })));
+      b.appendChild(h('div', { class: 'field' }, h('label', { for: 'ct-pw' }, '비밀번호 ', h('span', { class: 'hint' }, '4자 이상')),
+        h('input', { id: 'ct-pw', type: 'password', autocomplete: 'new-password', oninput: function (e) { pw = e.target.value; } })));
+      b.appendChild(h('div', { class: 'field' }, h('label', { for: 'ct-pw2' }, '비밀번호 확인'),
+        h('input', { id: 'ct-pw2', type: 'password', autocomplete: 'new-password', oninput: function (e) { pw2 = e.target.value; } }),
+        h('div', { class: 'help', id: 'ct-help' })));
+      if (liveDrugs().length || liveBags().length) b.appendChild(h('div', { class: 'notice' }, '이 기기에 있는 약 ' + liveDrugs().length + '건 · 가방 ' + liveBags().length + '개는 새 팀의 목록으로 올라가요.'));
+      setTimeout(function () { var i = qs('#ct-id'); if (i) i.focus(); }, 120);
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn', onclick: function () { c.close(); } }, '취소'));
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        var help = qs('#ct-help');
+        if (pw !== pw2) { help.textContent = '비밀번호 확인이 달라요'; help.className = 'help bad'; return; }
+        if (!server || !server.url) { help.textContent = '서버 주소를 아직 못 찾았어요'; help.className = 'help bad'; return; }
+        help.textContent = '만드는 중…'; help.className = 'help';
+        teamCreate(server.url, id, name, pw).then(function (res) {
+          c.close(); if (onDone) onDone();
+          toast(res.adopted ? '팀을 만들었어요 · 시트에 있던 약 ' + res.adopted + '건을 이 팀에 연결했어요' : '팀을 만들었어요: ' + (res.team.name || res.team.id));
+          return syncNow({ manual: false }).then(function () { render(); openTeamInvite(); });
+        }).catch(function (e) { help.textContent = friendlyServerError(e); help.className = 'help bad'; });
+      } }, '팀 만들기'));
+    }
+  });
+}
+
+/** What to send to teammates: the ID (password by word of mouth) and the one-tap web link for iPhones. */
+function openTeamInvite() {
+  var sy = DB.settings.sync || {};
+  if (!sy.teamId) { openShareInfo(); return; }
+  var webLink = WEB_BASE_URL && sy.url && sy.url !== 'gas' ? WEB_BASE_URL + '?team=' + encodeURIComponent(sy.url) + '&id=' + encodeURIComponent(sy.teamId) : '';
+  var text = '[선교약품] 팀 아이디: ' + sy.teamId + '\n앱을 열고 로그인 → 아이디 ' + sy.teamId + ' + 비밀번호(따로 알려드려요)' + (webLink ? '\n아이폰/설치 없이: ' + webLink : '');
+  openSheet({
+    title: '팀원 초대',
+    render: function (c) {
+      c.body.appendChild(h('div', { class: 'invite-id' }, h('div', { class: 'muted', style: 'font-size:12px' }, '팀 아이디'), h('b', null, sy.teamId), h('div', { class: 'muted', style: 'font-size:13px;margin-top:4px' }, sy.name || '')));
+      c.body.appendChild(h('ol', { style: 'padding-left:20px;color:var(--ink-2);font-size:14px;line-height:1.6;margin:10px 0' },
+        h('li', null, h('b', null, '안드로이드'), ': 앱(APK) 설치 → 첫 화면에서 아이디·비밀번호 입력'),
+        h('li', null, h('b', null, '아이폰'), ': 아래 링크를 Safari로 열기 → 비밀번호 입력 → 공유 버튼 → "홈 화면에 추가"'),
+        h('li', null, '비밀번호는 카톡 대신 말로 알려주는 게 안전해요')));
+      var ta = h('textarea', { readonly: true, style: 'width:100%;min-height:110px;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;word-break:break-all' }, text);
+      c.body.appendChild(ta);
+      c.body.appendChild(h('div', { class: 'btn-row', style: 'margin-top:10px' },
+        h('button', { class: 'btn primary', onclick: function () { ta.select(); try { document.execCommand('copy'); toast('초대 문구를 복사했어요'); } catch (e) { toast('길게 눌러 복사하세요'); } } }, '초대 문구 복사'),
+        sy.sheetUrl ? h('button', { class: 'btn', onclick: function () { openExternalLink(sy.sheetUrl); } }, '시트 열기') : null));
+    }
+  });
+}
+
+function openChangePassword() {
+  var pw = '', pw2 = '';
+  openSheet({
+    title: '팀 비밀번호 바꾸기',
+    render: function (c) {
+      c.body.appendChild(h('p', { class: 'muted', style: 'font-size:14px;margin:4px 0 8px' }, '바꾸면 다른 팀원들은 다음 동기화 때 새 비밀번호로 다시 로그인해야 해요.'));
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '새 비밀번호 ', h('span', { class: 'hint' }, '4자 이상')), h('input', { type: 'password', autocomplete: 'new-password', oninput: function (e) { pw = e.target.value; } })));
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '새 비밀번호 확인'), h('input', { type: 'password', autocomplete: 'new-password', oninput: function (e) { pw2 = e.target.value; } }), h('div', { class: 'help', id: 'cp-help' })));
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn', onclick: function () { c.close(); } }, '취소'));
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        var help = qs('#cp-help');
+        if (pw.length < 4) { help.textContent = '4자 이상으로'; help.className = 'help bad'; return; }
+        if (pw !== pw2) { help.textContent = '확인이 달라요'; help.className = 'help bad'; return; }
+        var sy = DB.settings.sync, next = teamAuth(sy.teamId, pw);
+        remoteCall('teamPassword', { newAuth: next }).then(function (res) {
+          if (!res || !res.ok) throw remoteError(res, '실패');
+          sy.auth = next; save(); c.close(); toast('비밀번호를 바꿨어요');
+        }).catch(function (e) { help.textContent = String(e && e.message || e); help.className = 'help bad'; });
+      } }, '바꾸기'));
+    }
+  });
 }
 
 /* ocr.js — photo → text → search. Engines: ML Kit (native, via /api/ocr) or Tesseract.js (offline fallback). */
@@ -2188,6 +2542,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     syncTeamToLocation();
     showInstallHint();
+    ensureLogin();
   });
   window.addEventListener('pagehide', function () { clearTimeout(saveTimer); flushSave(); });
   document.addEventListener('visibilitychange', function () {
