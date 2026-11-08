@@ -404,7 +404,7 @@ details.more[open] summary::before { content: "▾ "; }
 <input type="file" id="pick-gallery" accept="image/*" multiple hidden>
 <input type="file" id="pick-json" accept=".json,application/json" hidden>
 <script>
-window.MEDKIT_CONFIG = { mode: 'web', build: '20261108175816', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
+window.MEDKIT_CONFIG = { mode: 'web', build: '20261108180429', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
   lib: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
   workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
   corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
@@ -1254,6 +1254,7 @@ function pickResult(it) {
   }).catch(function () { loading.close(); openAddSheet(prefillFrom(it, null), { mode: 'add' }); });
 }
 function normCls(s) { return String(s || '').replace(/^기타의\s*/, '').replace(/^기타\s+/, '').trim(); }
+function cleanCompany(s) { return String(s || '').replace(/\(주\)|㈜|주식회사|\(유\)|유한회사/g, '').replace(/\s+/g, ' ').trim(); }
 function prefillFrom(it, det) {
   var si = splitIngredients(it.ingr_mg || it.list_sunb_name || '');
   var p = {
@@ -1313,6 +1314,8 @@ function openAddSheet(p, opts) {
     if (pre.expiry && !p.expiry) p.expiry = pre.expiry;
     if (pre.packUnit) { if (p.packUnit == null || (p.packOptions || []).indexOf(pre.packUnit) >= 0) p.packUnit = pre.packUnit; p.packOptions = uniq([pre.packUnit].concat(p.packOptions || [])); }
   }
+  // 기부회사: unless given, the drug's own maker (약학정보원 업체명) — most donations come straight from the manufacturer
+  if (!edit && !p.donor && p.company) p.donor = cleanCompany(p.company);
   var m = edit ? JSON.parse(JSON.stringify(orig)) : {
     cat1: p.cat1 || '', cat2: p.cat2 || '', ingredient: p.ingredient || '', name: p.name || '', strength: p.strength || '',
     packUnit: p.packUnit != null ? p.packUnit : null, packCount: p.packCount != null ? p.packCount : null, total: null,
@@ -1359,7 +1362,8 @@ function openAddSheet(p, opts) {
         h('dt', null, '함량'), h('dd', null, m.strength || '-'),
         h('dt', null, '성분명'), h('dd', null, m.ingredient || '-'),
         h('dt', null, '분류'), h('dd', null, [m.cat1, m.cat2].filter(Boolean).join(' › ') || '-'),
-        h('dt', null, '제형'), h('dd', null, (m.form || '-') + (m.formRaw ? ' (' + m.formRaw + ')' : ''))));
+        h('dt', null, '제형'), h('dd', null, (m.form || '-') + (m.formRaw ? ' (' + m.formRaw + ')' : '')),
+        m.company ? h('dt', null, '기부회사') : null, m.company ? h('dd', null, (m.donor || '-') + (m.donor && cleanCompany(m.company) === m.donor ? ' (업체명)' : '')) : null));
     } else {
       auto.appendChild(field('의약품명', 'name', { placeholder: '예: 뉴부틴서방정' }));
       auto.appendChild(h('div', { class: 'grid-2' },
