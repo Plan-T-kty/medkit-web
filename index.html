@@ -465,7 +465,7 @@ body.has-select-bar .view { padding-bottom: calc(var(--tabbar-h) + 120px + env(s
 <input type="file" id="pick-gallery" accept="image/*" multiple hidden>
 <input type="file" id="pick-json" accept=".json,application/json" hidden>
 <script>
-window.MEDKIT_CONFIG = { mode: 'web', build: '20261108200021', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
+window.MEDKIT_CONFIG = { mode: 'web', build: '20261108204944', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
   lib: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
   workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
   corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
@@ -739,6 +739,24 @@ function livePeople() { return DB.people.filter(function (p) { return !p.deleted
 function liveVehicles() { return DB.vehicles.filter(function (v) { return !v.deleted; }); }
 function putRecord(kind, rec) { var list = DB[kind], i = list.findIndex(function (r) { return r.id === rec.id; }); touch(rec); if (i >= 0) list[i] = rec; else list.push(rec); save(); }
 function removeRecord(kind, id) { var list = DB[kind], r = list.filter(function (x) { return x.id === id; })[0]; if (!r) return; if (syncConfigured()) { r.deleted = true; touch(r); } else DB[kind] = list.filter(function (x) { return x.id !== id; }); save(); }
+/* ---------- generic multi-select (bags, 명단; the drug tab has its own richer version) ---------- */
+// UI.pick = { kind, ids: {} } while a select mode is active on the current tab
+function pickActive(kind) { return !!(UI.pick && UI.pick.kind === kind); }
+function pickToggleMode(kind, tab, rerender) { UI.pick = pickActive(kind) ? null : { kind: kind, tab: tab, ids: {} }; if (!UI.pick) removeSelectBar(); rerender(); }
+function pickToggle(id, rerender) { if (!UI.pick) return; if (UI.pick.ids[id]) delete UI.pick.ids[id]; else UI.pick.ids[id] = 1; rerender(); }
+function pickCount() { return UI.pick ? Object.keys(UI.pick.ids).length : 0; }
+function removeSelectBar() { var bar = qs('#select-bar'); if (bar) bar.remove(); document.body.classList.remove('has-select-bar'); }
+/** opts: { count, total, noun, onAll(selectAll:boolean), actions: [{label, cls, disabled, fn}], onCancel } */
+function showSelectBar(opts) {
+  var bar = qs('#select-bar');
+  if (!bar) { bar = h('div', { id: 'select-bar', class: 'select-bar' }); document.body.appendChild(bar); document.body.classList.add('has-select-bar'); }
+  bar.innerHTML = '';
+  var all = opts.count === opts.total && opts.total > 0;
+  bar.appendChild(h('div', { class: 'sb-count' }, opts.count ? opts.count + (opts.noun || '건') + ' 선택' : '항목을 눌러 선택하세요',
+    h('button', { class: 'btn ghost sm', onclick: function () { opts.onAll(!all); } }, all ? '선택 해제' : '전체 선택')));
+  bar.appendChild(h('div', { class: 'sb-actions' }, opts.actions.map(function (a) { return h('button', { class: 'btn ' + (a.cls || ''), disabled: !!a.disabled, onclick: a.fn }, a.label); }),
+    h('button', { class: 'btn ghost', onclick: opts.onCancel }, '취소')));
+}
 /** undo helper for bulk deletes: bring records back (tombstone → live, or re-insert) */
 function restoreRecords(kind, recs) {
   recs.forEach(function (rec) { var list = DB[kind], i = list.findIndex(function (x) { return x.id === rec.id; }); rec.deleted = false; touch(rec); if (i >= 0) list[i] = rec; else list.push(rec); });
@@ -1276,7 +1294,7 @@ function toggleSelectMode(on) {
 function selectedLots() { return liveDrugs().filter(function (d) { return UI.selected && UI.selected[d.id]; }); }
 function renderSelectBar() {
   var bar = qs('#select-bar');
-  if (!UI.selectMode) { if (bar) bar.remove(); document.body.classList.remove('has-select-bar'); return; }
+  if (!UI.selectMode) { removeSelectBar(); return; }
   if (!bar) { bar = h('div', { id: 'select-bar', class: 'select-bar' }); document.body.appendChild(bar); document.body.classList.add('has-select-bar'); }
   var n = selectedLots().length, all = liveDrugs().length;
   bar.innerHTML = '';
@@ -1735,7 +1753,8 @@ function renderBags(root) {
       h('button', { class: 'iconbtn amber', title: '사진 찍고 가방 등록', 'aria-label': '사진 찍고 가방 등록', onclick: function () { newBagFromCamera(); } }, '📷'),
       h('button', { class: 'iconbtn', title: '가방 추가', 'aria-label': '가방 추가', onclick: function () { openBagSheet(null, {}); } }, '＋')),
     h('div', { style: 'display:flex;gap:10px;align-items:center;padding:8px 2px 0;color:var(--ink-2);font-size:13px;font-weight:600' },
-      h('span', null, '가방 ' + bagsLive.length + '개'), h('span', null, '품목 ' + items + '개'), h('span', { style: 'flex:1' }), syncPill())));
+      h('span', null, '가방 ' + bagsLive.length + '개'), h('span', null, '품목 ' + items + '개'), h('span', { style: 'flex:1' }), syncPill(),
+      bagsLive.length ? h('button', { class: 'chip select-chip' + (pickActive('bags') ? ' on' : ''), onclick: function () { pickToggleMode('bags', 'bags', function () { render(); }); } }, pickActive('bags') ? '선택 끝' : '☑ 선택') : null)));
   root.appendChild(h('div', { id: 'bag-body' }));
   renderBagBody();
 }
@@ -1761,9 +1780,36 @@ function renderBagBody() {
   var list = h('div', { class: 'list' });
   bags.forEach(function (b) { list.appendChild(bagCard(b)); });
   body.appendChild(list);
+  if (pickActive('bags')) renderBagSelectBar();
+}
+function renderBagSelectBar() {
+  var n = pickCount(), all = liveBags();
+  showSelectBar({ count: n, total: all.length, noun: '개',
+    onAll: function (on) { UI.pick.ids = {}; if (on) all.forEach(function (b) { UI.pick.ids[b.id] = 1; }); renderBagBody(); },
+    actions: [{ label: '삭제 (' + n + ')', cls: 'danger', disabled: !n, fn: bulkDeleteBags }],
+    onCancel: function () { UI.pick = null; removeSelectBar(); render(); } });
+}
+function bulkDeleteBags() {
+  var picked = liveBags().filter(function (b) { return UI.pick && UI.pick.ids[b.id]; }); if (!picked.length) return;
+  var nos = picked.map(function (b) { return b.no; }).filter(Boolean);
+  confirmSheet('선택한 가방 삭제', picked.length + '개 가방을 삭제합니다' + (syncConfigured() ? ' (팀 시트에도 삭제로 표시돼요)' : '') + '.\n번호: ' + nos.slice(0, 12).join(', ') + (nos.length > 12 ? ' 외 ' + (nos.length - 12) + '개' : ''), '삭제', true).then(function (ok) {
+    if (!ok) return;
+    var copies = picked.map(function (b) { return JSON.parse(JSON.stringify(b)); });
+    picked.forEach(function (b) { removeBag(b.id); });
+    UI.pick = null; removeSelectBar(); render();
+    toast(picked.length + '개 삭제됨', { label: '되돌리기', fn: function () { restoreRecords('bags', copies); render(); toast('되돌렸어요'); } });
+  });
 }
 function bagCard(b) {
   var items = (b.items || []);
+  if (pickActive('bags')) {
+    var on = !!UI.pick.ids[b.id];
+    return h('div', { class: 'card bag-card sel-card' + (on ? ' picked' : ''), role: 'button', onclick: function () { pickToggle(b.id, renderBagBody); } },
+      h('div', { class: 'sel-left', style: 'align-self:center' }, h('input', { type: 'checkbox', class: 'sel', checked: on, onclick: function (e) { e.stopPropagation(); pickToggle(b.id, renderBagBody); } })),
+      h('div', { class: 'bag-main' },
+        h('div', { class: 'bag-top' }, h('span', { class: 'ltag' }, b.no || '-'), h('span', { class: 'bag-owner' }, b.owner || '담당자 없음')),
+        h('div', { class: 'bag-part' }, [b.part, b.summary].filter(Boolean).join(' · ') || (items.length ? items.length + '개 품목' : '내용물 미입력'))));
+  }
   var li = items.slice(0, 5).map(function (i) { return h('li', null, h('b', null, i.name), i.qty != null ? ' ' + fmtNum(i.qty) : '', i.unit ? ' ' + i.unit : ''); });
   if (items.length > 5) li.push(h('li', { class: 'more' }, '외 ' + (items.length - 5) + '개'));
   var photo = b.photos && b.photos.length ? h('img', { class: 'bag-photo', src: photoUrl(b.photos[0]), alt: '' }) : h('div', { class: 'bag-photo none' }, '🧳');
@@ -1854,6 +1900,7 @@ function openBagSheet(id, opts) {
         h('button', { type: 'button', class: 'rm', 'aria-label': '삭제', onclick: function () { m.items.splice(idx, 1); refreshItems(); } }, '✕')));
     });
     wrap.appendChild(list);
+    if (m.items.length >= 2) wrap.appendChild(h('div', { style: 'text-align:right;margin:-2px 0 6px' }, h('button', { type: 'button', class: 'btn ghost sm', onclick: function () { var keep = m.items.slice(); m.items = []; refreshItems(); toast(keep.length + '개 품목을 지웠어요', { label: '되돌리기', fn: function () { m.items = keep; refreshItems(); } }); } }, '내용물 모두 지우기 (' + m.items.length + ')')));
     var qa = h('input', { placeholder: '빠른 추가: 품명 수량 (예: 오메가3 40)', id: 'b-quick' });
     function addQuick() { var it = parseItemLine(qa.value); if (!it) return; it.id = uid(); m.items.push(it); qa.value = ''; refreshItems(); setTimeout(function () { var i = qs('#b-quick'); if (i) i.focus(); }, 0); }
     qa.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addQuick(); } });
@@ -2385,7 +2432,8 @@ function renderPeople(body) {
   body.appendChild(h('div', { class: 'row-actions' },
     h('button', { class: 'btn primary', onclick: function () { openPersonSheet(null); } }, '＋ 한 명 추가'),
     h('button', { class: 'btn', onclick: function () { openPastePeople(); } }, '여러 명 붙여넣기'),
-    people.length ? h('button', { class: 'btn ghost', onclick: function () { copyText(rosterText(), '명단을 복사했어요'); } }, '명단 복사') : null));
+    people.length ? h('button', { class: 'btn ghost', onclick: function () { copyText(rosterText(), '명단을 복사했어요'); } }, '명단 복사') : null,
+    people.length ? h('button', { class: 'chip select-chip' + (pickActive('people') ? ' on' : ''), style: 'margin-left:auto', onclick: function () { pickToggleMode('people', 'domestic', refreshDomestic); } }, pickActive('people') ? '선택 끝' : '☑ 선택') : null));
   if (!people.length) {
     body.appendChild(h('div', { class: 'empty' }, h('h2', null, '아직 명단이 없어요'),
       h('p', null, '참가자 이름을 넣어 두면 차량 배치표에서 이름을 끌어다 태울 수 있어요. 카톡 명단을 그대로 복사해서 "여러 명 붙여넣기"에 넣는 게 제일 빨라요.')));
@@ -2398,6 +2446,13 @@ function renderPeople(body) {
     list.appendChild(h('div', { class: 'group-h' }, h('span', { class: 'gh-name' }, r), h('span', { class: 'cnt' }, byRole[r].length + '명')));
     byRole[r].forEach(function (p) {
       var v = vehicleOf(p.id);
+      if (pickActive('people')) {
+        var on = !!UI.pick.ids[p.id];
+        list.appendChild(h('div', { class: 'card person-card sel-card' + (on ? ' picked' : ''), role: 'button', onclick: function () { pickToggle(p.id, refreshDomestic); } },
+          h('div', { class: 'sel-left' }, h('input', { type: 'checkbox', class: 'sel', checked: on, onclick: function (e) { e.stopPropagation(); pickToggle(p.id, refreshDomestic); } }),
+            h('div', null, h('div', { class: 'drug-name' }, p.name, p.role ? h('span', { class: 'tag' }, p.role) : null), h('div', { class: 'drug-sub' }, p.phone ? h('span', null, p.phone) : null, v ? h('span', { class: 'veh-tag' }, '🚐 ' + v.name) : null)))));
+        return;
+      }
       list.appendChild(h('button', { class: 'card person-card', onclick: function () { openPersonSheet(p); } },
         h('div', { class: 'drug-row' },
           h('div', null, h('div', { class: 'drug-name' }, p.name, p.role ? h('span', { class: 'tag' }, p.role) : null),
@@ -2405,6 +2460,24 @@ function renderPeople(body) {
     });
   });
   body.appendChild(list);
+  if (pickActive('people')) {
+    var n = pickCount();
+    showSelectBar({ count: n, total: people.length, noun: '명',
+      onAll: function (on) { UI.pick.ids = {}; if (on) people.forEach(function (p) { UI.pick.ids[p.id] = 1; }); refreshDomestic(); },
+      actions: [{ label: '삭제 (' + n + ')', cls: 'danger', disabled: !n, fn: bulkDeletePeople }],
+      onCancel: function () { UI.pick = null; removeSelectBar(); refreshDomestic(); } });
+  }
+}
+function bulkDeletePeople() {
+  var picked = livePeople().filter(function (p) { return UI.pick && UI.pick.ids[p.id]; }); if (!picked.length) return;
+  confirmSheet('선택한 참가자 삭제', picked.length + '명을 명단에서 지웁니다. 차량 배치에서도 빠져요.\n' + picked.slice(0, 10).map(function (p) { return p.name; }).join(', ') + (picked.length > 10 ? ' 외 ' + (picked.length - 10) + '명' : ''), '삭제', true).then(function (ok) {
+    if (!ok) return;
+    var copies = picked.map(function (p) { return JSON.parse(JSON.stringify(p)); }), ids = {}; picked.forEach(function (p) { ids[p.id] = 1; });
+    liveVehicles().forEach(function (v) { if (ids[v.driver] || (v.seats || []).some(function (x) { return ids[x]; })) { if (ids[v.driver]) v.driver = ''; v.seats = (v.seats || []).filter(function (x) { return !ids[x]; }); saveVehicle(v); } });
+    picked.forEach(function (p) { removeRecord('people', p.id); });
+    UI.pick = null; removeSelectBar(); refreshDomestic();
+    toast(picked.length + '명 삭제됨', { label: '되돌리기', fn: function () { restoreRecords('people', copies); refreshDomestic(); toast('되돌렸어요 (차량 배치는 다시 해주세요)'); } });
+  });
 }
 function rosterText() {
   var lines = ['[명단] ' + livePeople().length + '명'];
@@ -3011,7 +3084,9 @@ function extractFacts(items) {
 function render() {
   var root = qs('#view');
   qsa('.tab').forEach(function (t) { t.classList.toggle('active', t.dataset.tab === UI.tab); });
-  if (UI.tab !== 'drugs') { UI.selectMode = false; UI.selected = {}; var sb = qs('#select-bar'); if (sb) sb.remove(); document.body.classList.remove('has-select-bar'); }
+  if (UI.tab !== 'drugs') { UI.selectMode = false; UI.selected = {}; }
+  if (!UI.pick || UI.pick.tab !== UI.tab) { UI.pick = null; }
+  if (UI.tab !== 'drugs' && !UI.pick) removeSelectBar();
   if (UI.tab !== 'domestic') UI.carry = null;
   if (UI.tab === 'drugs') renderDrugs(root);
   else if (UI.tab === 'bags') renderBags(root);
