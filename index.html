@@ -1,0 +1,2202 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0F7A5A">
+<meta name="color-scheme" content="light dark">
+<title>선교약품</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="선교약품">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root {
+  --bg: #F6F7F5;
+  --surface: #FFFFFF;
+  --surface-2: #EEF1EE;
+  --ink: #17212B;
+  --ink-2: #5A6471;
+  --ink-3: #8B95A1;
+  --line: #DCE1E5;
+  --green: #0F7A5A;
+  --green-ink: #0A5C44;
+  --green-soft: #DFF2E9;
+  --amber: #C66A14;
+  --amber-ink: #8F4A0A;
+  --amber-soft: #FBEBD6;
+  --red: #B3261E;
+  --red-soft: #FBE3E0;
+  --blue: #1F5FA8;
+  --blue-soft: #E1ECF9;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(23,33,43,.06), 0 6px 18px rgba(23,33,43,.06);
+  --tabbar-h: 64px;
+  --font: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121619;
+    --surface: #1B2126;
+    --surface-2: #232B31;
+    --ink: #EEF2F4;
+    --ink-2: #AAB4BE;
+    --ink-3: #74808B;
+    --line: #2E373E;
+    --green: #35B588;
+    --green-ink: #8FE0C0;
+    --green-soft: #173A2F;
+    --amber: #E8923C;
+    --amber-ink: #F5C48F;
+    --amber-soft: #3E2A14;
+    --red: #F08A82;
+    --red-soft: #4A1F1B;
+    --blue: #7FB0F0;
+    --blue-soft: #1D2E44;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; min-width: 0; }
+html, body { margin: 0; height: 100%; overflow-x: hidden; }
+input, select, textarea { max-width: 100%; }
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--bg);
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h1, h2, h3 { margin: 0; font-weight: 700; }
+.num { font-variant-numeric: tabular-nums; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+#app { min-height: 100%; }
+.view { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px); }
+
+/* ---------- tab bar ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border: 0; background: none; font-size: 12px; font-weight: 600; color: var(--ink-3);
+}
+.tab .tab-ic { font-size: 22px; line-height: 1; filter: grayscale(1); opacity: .7; }
+.tab.active { color: var(--ink); }
+.tab.active .tab-ic { filter: none; opacity: 1; }
+.tab[data-tab="drugs"].active { color: var(--green-ink); }
+.tab[data-tab="bags"].active { color: var(--amber-ink); }
+
+/* ---------- top bars ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg);
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+}
+.topbar-row { display: flex; align-items: center; gap: 8px; }
+.topbar h1 { font-size: 22px; letter-spacing: -0.01em; }
+.topbar .spacer { flex: 1; }
+.searchbox {
+  flex: 1; display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  padding: 0 8px 0 12px; height: 48px;
+}
+.searchbox input {
+  flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: 17px; height: 100%;
+}
+.searchbox input::placeholder { color: var(--ink-3); }
+.searchbox .clear { border: 0; background: var(--surface-2); color: var(--ink-2); width: 28px; height: 28px; border-radius: 50%; font-size: 14px; }
+.iconbtn {
+  width: 48px; height: 48px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--surface); font-size: 22px; display: inline-flex; align-items: center; justify-content: center;
+  flex: none;
+}
+.iconbtn.primary { background: var(--green); border-color: var(--green); color: #fff; }
+.iconbtn.amber { background: var(--amber); border-color: var(--amber); color: #fff; }
+.iconbtn:active { transform: scale(.96); }
+
+.subbar { display: flex; gap: 6px; align-items: center; padding: 8px 14px 0; overflow-x: auto; scrollbar-width: none; }
+.subbar::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip.warn.on { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* ---------- lists ---------- */
+.list { padding: 8px 14px 0; display: flex; flex-direction: column; gap: 8px; }
+.group-h {
+  position: sticky; top: calc(68px + env(safe-area-inset-top)); z-index: 5;
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 10px 2px 4px; font-size: 13px; font-weight: 700; color: var(--ink-2);
+  background: linear-gradient(var(--bg) 70%, transparent);
+}
+.group-h .cnt { color: var(--ink-3); font-weight: 600; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px 14px; text-align: left; width: 100%; display: block;
+}
+.card:active { background: var(--surface-2); }
+.drug-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; }
+.drug-name { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.drug-sub { color: var(--ink-2); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.drug-total { text-align: right; }
+.drug-total b { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.drug-total small { display: block; color: var(--ink-3); font-size: 12px; font-weight: 600; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); }
+.tag.form { background: var(--green-soft); color: var(--green-ink); }
+.lots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+/* expiry stamp — the signature element */
+.stamp {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--line); border-radius: 7px; padding: 3px 8px;
+  font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .01em;
+  color: var(--ink-2); background: var(--surface);
+}
+.stamp .q { font-weight: 600; color: var(--ink-3); }
+.stamp.soon { border-color: var(--amber); color: var(--amber-ink); background: var(--amber-soft); }
+.stamp.urgent { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+.stamp.expired { border-color: var(--red); color: #fff; background: var(--red); }
+.stamp.none { border-style: dashed; }
+
+.empty { padding: 48px 24px; text-align: center; color: var(--ink-2); }
+.empty h2 { font-size: 19px; margin-bottom: 8px; color: var(--ink); }
+.empty p { margin: 0 0 18px; }
+.empty .actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+
+/* ---------- buttons ---------- */
+.btn {
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 12px; padding: 12px 16px; font-weight: 700; font-size: 16px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px;
+}
+.btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
+.btn.amber { background: var(--amber); border-color: var(--amber); color: #fff; }
+.btn.danger { color: var(--red); border-color: var(--red); background: var(--surface); }
+.btn.ghost { border-color: transparent; background: none; color: var(--ink-2); }
+.btn.sm { min-height: 36px; padding: 6px 12px; font-size: 14px; border-radius: 10px; }
+.btn:disabled { opacity: .5; }
+.btn:active { transform: scale(.98); }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+
+/* ---------- search results ---------- */
+.section-title { padding: 14px 16px 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+.section-title .src { margin-left: auto; font-weight: 600; color: var(--ink-3); }
+.result {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center;
+}
+.result .r-name { font-weight: 700; font-size: 16px; }
+.result .r-sub { color: var(--ink-2); font-size: 13px; }
+.result .r-side { text-align: right; color: var(--ink-3); font-size: 12px; font-weight: 600; }
+.result.inv { border-left: 4px solid var(--green); }
+.notice { margin: 8px 14px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); color: var(--ink-2); font-size: 14px; }
+.notice.err { background: var(--red-soft); color: var(--red); }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--ink-2); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -3px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2s; } }
+
+/* ---------- sheets (bottom modals) ---------- */
+.sheet-wrap { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.sheet-wrap .scrim { position: absolute; inset: 0; background: rgba(10,14,18,.45); }
+.sheet {
+  position: relative; width: 100%; background: var(--surface); border-radius: 20px 20px 0 0;
+  max-height: calc(100% - 24px - env(safe-area-inset-top)); display: flex; flex-direction: column;
+  box-shadow: 0 -8px 30px rgba(0,0,0,.2);
+  animation: up .22s ease-out;
+}
+.sheet.full { max-height: 100%; height: 100%; border-radius: 0; padding-top: env(safe-area-inset-top); }
+.sheet-b { min-height: 0; }
+.sheet-h, .sheet-f { flex: none; }
+@keyframes up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+.sheet-h { display: flex; align-items: center; gap: 8px; padding: 14px 16px 8px; }
+.sheet-h h2 { font-size: 19px; flex: 1; letter-spacing: -0.01em; }
+.sheet-h .x { border: 0; background: var(--surface-2); width: 34px; height: 34px; border-radius: 50%; font-size: 16px; color: var(--ink-2); }
+.sheet-b { overflow-y: auto; padding: 0 16px 16px; flex: 1; -webkit-overflow-scrolling: touch; }
+.sheet-f { padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); display: flex; gap: 8px; background: var(--surface); }
+.sheet-f .btn { flex: 1; }
+
+/* ---------- forms ---------- */
+.field { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+.field label { font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.field label .hint { font-weight: 500; color: var(--ink-3); }
+.field input, .field select, .field textarea {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 12px 12px;
+  font-size: 17px; min-height: 48px; outline: none; width: 100%;
+}
+.field textarea { min-height: 72px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.field.amber input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
+.field input.big { font-size: 24px; font-weight: 700; min-height: 56px; letter-spacing: .01em; }
+.field .help { font-size: 13px; color: var(--ink-3); min-height: 18px; }
+.field .help.ok { color: var(--green-ink); font-weight: 600; }
+.field .help.bad { color: var(--red); font-weight: 600; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.grid-3 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0 8px; align-items: end; }
+.grid-3 .times { padding-bottom: 22px; font-size: 20px; color: var(--ink-3); text-align: center; }
+.total-line { display: flex; align-items: baseline; justify-content: space-between; padding: 6px 2px; }
+.total-line b { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+.total-line span { color: var(--ink-2); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips .chip.sm { padding: 4px 10px; font-size: 12px; }
+.auto-box {
+  border: 1px dashed var(--line); border-radius: 14px; padding: 10px 12px; margin: 8px 0; background: var(--surface-2);
+}
+.auto-box .ab-h { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.auto-box .ab-h button { margin-left: auto; }
+.auto-box dl { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 14px; }
+.auto-box dt { color: var(--ink-3); font-weight: 600; }
+.auto-box dd { margin: 0; font-weight: 600; word-break: break-all; }
+.collapse-btn { border: 0; background: none; color: var(--blue); font-weight: 700; font-size: 14px; padding: 6px 0; }
+details.more { margin: 8px 0; }
+details.more summary { cursor: pointer; font-weight: 700; color: var(--ink-2); font-size: 14px; padding: 8px 0; list-style: none; }
+details.more summary::before { content: "▸ "; }
+details.more[open] summary::before { content: "▾ "; }
+
+/* ---------- bags ---------- */
+.bag-card { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: start; }
+.bag-photo { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; background: var(--surface-2); display: block; }
+.bag-photo.none { display: flex; align-items: center; justify-content: center; color: var(--ink-3); font-size: 28px; }
+.bag-main { min-width: 0; }
+.bag-top { display: flex; align-items: center; gap: 8px; }
+/* luggage tag — the signature element of the bag section */
+.ltag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--amber); color: #fff; font-weight: 800; font-variant-numeric: tabular-nums;
+  padding: 4px 10px 4px 8px; border-radius: 6px 10px 10px 6px; font-size: 15px; letter-spacing: .02em;
+  position: relative; flex: none;
+}
+.ltag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.25); }
+.ltag.big { font-size: 22px; padding: 6px 14px 6px 10px; }
+.bag-owner { font-weight: 700; font-size: 16px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bag-part { color: var(--ink-3); font-size: 12px; font-weight: 600; }
+.bag-items { margin: 6px 0 0; padding: 0; list-style: none; color: var(--ink-2); font-size: 14px; display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.bag-items li b { color: var(--ink); font-weight: 700; }
+.bag-items .more { color: var(--ink-3); }
+.photo-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; scrollbar-width: none; }
+.photo-strip::-webkit-scrollbar { display: none; }
+.photo-strip .ph { position: relative; flex: none; }
+.photo-strip img { width: 112px; height: 112px; object-fit: cover; border-radius: 12px; display: block; background: var(--surface-2); }
+.photo-strip .del { position: absolute; top: -6px; right: -6px; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--surface); background: var(--red); color: #fff; font-size: 13px; }
+.photo-strip .add { width: 112px; height: 112px; border-radius: 12px; border: 2px dashed var(--line); background: none; color: var(--ink-2); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; gap: 2px; }
+.photo-strip .add span { font-size: 26px; }
+.items-edit { display: flex; flex-direction: column; gap: 6px; }
+.item-line { display: grid; grid-template-columns: 1fr 72px 60px 36px; gap: 6px; align-items: center; }
+.item-line input { border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-height: 42px; font-size: 15px; outline: none; width: 100%; background: var(--surface); }
+.item-line input:focus { border-color: var(--amber); }
+.item-line .rm { border: 0; background: var(--surface-2); color: var(--ink-2); border-radius: 10px; height: 42px; }
+.quick-add { display: flex; gap: 6px; margin-top: 6px; }
+.quick-add input { flex: 1; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-height: 46px; outline: none; background: var(--surface); }
+.quick-add input:focus { border-color: var(--amber); }
+.bag-detail-photos img { width: 100%; border-radius: 14px; display: block; margin-bottom: 8px; }
+
+/* ---------- more ---------- */
+.menu { padding: 8px 14px; display: flex; flex-direction: column; gap: 8px; }
+.menu .card { display: flex; align-items: center; gap: 12px; }
+.menu .m-ic { font-size: 24px; width: 32px; text-align: center; }
+.menu .m-t { font-weight: 700; }
+.menu .m-d { color: var(--ink-2); font-size: 13px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px 14px 0; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+.stat b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.stat span { font-size: 12px; color: var(--ink-2); font-weight: 600; }
+
+/* ---------- toast ---------- */
+.toast {
+  position: fixed; left: 14px; right: 14px; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px); z-index: 40;
+  background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow);
+}
+.toast button { margin-left: auto; border: 0; background: none; color: var(--green); font-weight: 800; }
+@media (prefers-color-scheme: dark) { .toast button { color: #8FE0C0; } }
+
+/* ---------- iOS "add to home screen" hint ---------- */
+.install-hint {
+  margin: calc(8px + env(safe-area-inset-top)) 14px 0;
+  background: var(--green-soft, var(--surface-2)); color: var(--ink); border: 1px solid var(--line); padding: 10px 10px 10px 14px; border-radius: 12px;
+  display: flex; align-items: center; gap: 10px; font-size: 14px;
+}
+.install-hint + .view .topbar { padding-top: 10px; }
+.install-hint > div { flex: 1; min-width: 0; }
+.install-hint .iconbtn { width: 36px; height: 36px; flex: none; }
+
+/* ---------- OCR overlay ---------- */
+.ocr-wrap { display: flex; justify-content: center; background: #000; border-radius: 12px; overflow: hidden; }
+.ocr-stage { position: relative; display: inline-block; line-height: 0; touch-action: none; }
+.ocr-stage img { display: block; max-width: 100%; max-height: 46vh; width: auto; height: auto; }
+.ocr-status { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--ink-2); min-height: 22px; margin: 2px 0 4px; }
+.ocr-status.done { color: var(--ink); }
+.ocr-box { position: absolute; border: 2px solid #FFD54A; box-shadow: 0 0 0 9999px rgba(0,0,0,.45); border-radius: 4px; }
+.ocr-box .hdl { position: absolute; width: 28px; height: 28px; border-radius: 50%; background: #FFD54A; transform: translate(-50%, -50%); }
+.ocr-lines { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.ocr-line { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; text-align: left; font-size: 16px; font-weight: 600; }
+.ocr-line.best { border-color: var(--green); background: var(--green-soft); }
+.progress { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin: 8px 0; }
+.progress i { display: block; height: 100%; background: var(--green); width: 0; transition: width .2s; }
+
+.lot-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+.lot-row .lot-q { font-weight: 800; font-size: 18px; text-align: right; }
+.lot-row .lot-q small { display: block; font-size: 12px; color: var(--ink-3); font-weight: 600; }
+.lot-row .lot-meta { color: var(--ink-2); font-size: 13px; }
+.photo-thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--surface-2); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; margin: 8px 0; }
+.kv dt { color: var(--ink-3); font-weight: 600; }
+.kv dd { margin: 0; font-weight: 600; }
+.muted { color: var(--ink-3); }
+.danger-zone { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+/* ---------- sync status pill ---------- */
+.sync-pill {
+  flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 700; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+}
+.sync-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.sync-pill.ok::before { background: var(--green); }
+.sync-pill.busy::before { background: var(--blue); animation: pulse 1s ease-in-out infinite; }
+.sync-pill.err { color: var(--red); border-color: var(--red); }
+.sync-pill.err::before { background: var(--red); }
+@keyframes pulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sync-pill.busy::before { animation: none; } }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="view" class="view"></main>
+  <nav class="tabbar" id="tabbar">
+    <button class="tab" data-tab="drugs"><span class="tab-ic">💊</span><span>의약품</span></button>
+    <button class="tab" data-tab="bags"><span class="tab-ic">🧳</span><span>짐분배</span></button>
+    <button class="tab" data-tab="more"><span class="tab-ic">☰</span><span>더보기</span></button>
+  </nav>
+</div>
+<div id="sheets"></div>
+<div id="toast" class="toast" hidden></div>
+<input type="file" id="pick-photo" accept="image/*" capture="environment" hidden>
+<input type="file" id="pick-gallery" accept="image/*" multiple hidden>
+<input type="file" id="pick-json" accept=".json,application/json" hidden>
+<script>
+window.MEDKIT_CONFIG = { mode: 'web', build: '20261108162002', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
+  lib: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+  workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+  corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
+  langPath: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/kor@1.0.0/4.0.0_best_int', gzip: true } };
+</script>
+<script>
+/* core.js — state, storage/transport (native app · Apps Script web · plain web), sync engine, shared UI helpers */
+'use strict';
+
+var TOKEN = (function () {
+  var m = location.search.match(/[?&]t=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+})();
+/** 'native' = Android app (local server), 'gas' = served by Google Apps Script (team web version), 'web' = plain browser preview */
+var MODE = (window.google && window.google.script && window.google.script.run) ? 'gas' : 'web';
+var NATIVE = false; // true when the Android local server answers /api/ping
+var APP_INFO = { ocr: 'tesseract' };
+// where the installable web version (iPhone) lives; the build scripts override it through MEDKIT_CONFIG
+var WEB_BASE_URL = (window.MEDKIT_CONFIG && MEDKIT_CONFIG.webBaseUrl) || 'https://plan-t-kty.github.io/medkit-web/';
+function isIos() { return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+function isStandalone() { return !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)); }
+
+var DB = { version: 2, drugs: [], bags: [], settings: { ocrLang: 'kor', catMap: {}, sync: null }, photoLocal: {} };
+var UI = { tab: 'drugs', query: '', filter: 'all', results: null, searching: false, searchError: '' };
+
+/* ---------- tiny DOM helper ---------- */
+function h(tag, attrs) {
+  var el = document.createElement(tag);
+  var children = Array.prototype.slice.call(arguments, 2);
+  if (attrs) {
+    Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'class') el.className = v;
+      else if (k === 'style') el.style.cssText = v;
+      else if (k === 'html') el.innerHTML = v;
+      else if (k === 'dataset') Object.keys(v).forEach(function (d) { el.dataset[d] = v[d]; });
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+      else if (k in el && typeof v !== 'string') el[k] = v;
+      else el.setAttribute(k, v === true ? '' : v);
+    });
+  }
+  function add(c) {
+    if (c === null || c === undefined || c === false) return;
+    if (Array.isArray(c)) { c.forEach(add); return; }
+    el.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+  }
+  children.forEach(add);
+  return el;
+}
+function qs(sel, root) { return (root || document).querySelector(sel); }
+function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function nowIso() { return new Date().toISOString(); }
+function fmtNum(n) { if (n === null || n === undefined || n === '' || isNaN(n)) return '-'; return Number(n).toLocaleString('ko-KR'); }
+function fmtTime(ms) { if (!ms) return ''; var d = new Date(ms); var p = function (n) { return (n < 10 ? '0' : '') + n; }; var now = new Date(); var same = d.toDateString() === now.toDateString(); return (same ? '' : (d.getMonth() + 1) + '/' + d.getDate() + ' ') + p(d.getHours()) + ':' + p(d.getMinutes()); }
+function toNum(v) { if (v === null || v === undefined || v === '') return null; var n = Number(String(v).replace(/,/g, '').trim()); return isNaN(n) ? null : n; }
+
+/* ---------- toast ---------- */
+var toastTimer = null;
+function toast(msg, action) {
+  var t = qs('#toast');
+  t.innerHTML = '';
+  t.appendChild(h('span', null, msg));
+  if (action) t.appendChild(h('button', { onclick: function () { action.fn(); hideToast(); } }, action.label));
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, action ? 6000 : 2600);
+}
+function hideToast() { qs('#toast').hidden = true; }
+
+/* ---------- sheets (bottom modals) ---------- */
+var sheetStack = [];
+function openSheet(opts) {
+  var wrap = h('div', { class: 'sheet-wrap' });
+  var scrim = h('div', { class: 'scrim', onclick: function () { if (!opts.locked) closeSheet(wrap); } });
+  var sheet = h('div', { class: 'sheet' + (opts.full ? ' full' : '') });
+  var head = h('div', { class: 'sheet-h' },
+    h('h2', null, opts.title || ''),
+    h('button', { class: 'x', 'aria-label': '닫기', onclick: function () { closeSheet(wrap); } }, '✕'));
+  var body = h('div', { class: 'sheet-b' });
+  sheet.appendChild(head); sheet.appendChild(body);
+  var foot = null;
+  if (opts.footer) { foot = h('div', { class: 'sheet-f' }); sheet.appendChild(foot); }
+  wrap.appendChild(scrim); wrap.appendChild(sheet);
+  qs('#sheets').appendChild(wrap);
+  var ctx = { wrap: wrap, body: body, foot: foot, head: head, close: function () { closeSheet(wrap); }, onClose: opts.onClose, title: function (t) { qs('h2', head).textContent = t; } };
+  sheetStack.push(ctx);
+  if (typeof opts.render === 'function') opts.render(ctx);
+  if (typeof opts.footer === 'function') opts.footer(ctx);
+  document.body.style.overflow = 'hidden';
+  if (window.Android && window.Android.setCanGoBack) window.Android.setCanGoBack(true);
+  return ctx;
+}
+function closeSheet(wrap) {
+  var idx = -1;
+  for (var i = sheetStack.length - 1; i >= 0; i--) if (sheetStack[i].wrap === wrap) { idx = i; break; }
+  if (idx < 0) return;
+  var ctx = sheetStack.splice(idx, 1)[0];
+  if (ctx.onClose) try { ctx.onClose(); } catch (e) { }
+  if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+  if (!sheetStack.length) {
+    document.body.style.overflow = '';
+    if (window.Android && window.Android.setCanGoBack) window.Android.setCanGoBack(false);
+  }
+}
+function closeTopSheet() { if (sheetStack.length) { closeSheet(sheetStack[sheetStack.length - 1].wrap); return true; } return false; }
+window.appBack = function () { return closeTopSheet(); };
+
+function confirmSheet(title, msg, okLabel, danger) {
+  return new Promise(function (resolve) {
+    var done = false;
+    openSheet({
+      title: title,
+      render: function (c) { c.body.appendChild(h('p', { style: 'color:var(--ink-2);margin:4px 0 12px;white-space:pre-line' }, msg)); },
+      footer: function (c) {
+        c.foot.appendChild(h('button', { class: 'btn', onclick: function () { done = true; c.close(); resolve(false); } }, '취소'));
+        c.foot.appendChild(h('button', { class: 'btn ' + (danger ? 'danger' : 'primary'), onclick: function () { done = true; c.close(); resolve(true); } }, okLabel || '확인'));
+      },
+      onClose: function () { if (!done) resolve(false); }
+    });
+  });
+}
+
+/* ---------- transport ---------- */
+function apiUrl(path) { return path + (path.indexOf('?') >= 0 ? '&' : '?') + 't=' + encodeURIComponent(TOKEN); }
+function apiFetch(path, opts) {
+  opts = opts || {};
+  opts.headers = opts.headers || {};
+  opts.headers['X-Token'] = TOKEN;
+  return fetch(apiUrl(path), opts);
+}
+function parseQuery(path) { var q = {}; var i = path.indexOf('?'); if (i < 0) return q; path.slice(i + 1).split('&').forEach(function (kv) { var p = kv.split('='); q[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || '').replace(/\+/g, ' ')); }); return q; }
+/** Apps Script RPC (web version served by the shared sheet). Returns parsed JSON. */
+function gasCall(action, params) {
+  return new Promise(function (res, rej) {
+    try {
+      google.script.run
+        .withSuccessHandler(function (s) { try { res(typeof s === 'string' ? JSON.parse(s) : s); } catch (e) { rej(new Error('응답 형식 오류')); } })
+        .withFailureHandler(function (e) { rej(new Error(String(e && e.message || e))); })
+        .api(action, params || {});
+    } catch (e) { rej(e); }
+  });
+}
+function blobToBase64(blob) {
+  return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).replace(/^data:[^,]*,/, '')); }; r.onerror = function () { rej(new Error('읽기 실패')); }; r.readAsDataURL(blob); });
+}
+/** JSON API used by every screen. Outside the Android app (Apps Script page or the PWA) the paths are mapped onto the shared backend. */
+function apiJson(path, opts) {
+  if (MODE !== 'native' && NATIVE === false) {
+    var q = parseQuery(path), p = path.split('?')[0];
+    var viaTeam = MODE === 'gas' || syncConfigured();
+    if (p === '/api/ping') return Promise.resolve({ ok: true, native: false, gas: MODE === 'gas', ocr: 'tesseract' });
+    if (p === '/api/search') return viaTeam ? remoteCall('search', { q: q.q }) : Promise.resolve({ error: '약학정보원 검색은 팀 공유에 연결된 뒤 쓸 수 있어요' });
+    if (p === '/api/detail') return viaTeam ? remoteCall('detail', { code: q.code }) : Promise.resolve({ ok: false, error: 'offline' });
+    if (p === '/api/photo/delete') return Promise.resolve({ ok: true });
+    if (p === '/api/open') { openExternalLink(q.url); return Promise.resolve({ ok: true }); }
+    if (p === '/api/db') return Promise.resolve({ error: 'empty' });
+    if (p === '/api/sync') { var body = {}; try { body = JSON.parse(opts && opts.body || '{}'); } catch (e) { } return remoteCall(body.action, body.params || {}, body.body || null); }
+    return Promise.resolve({ error: 'unsupported in web version: ' + p });
+  }
+  return apiFetch(path, opts).then(function (r) {
+    return r.text().then(function (t) {
+      var j = null; try { j = t ? JSON.parse(t) : {}; } catch (e) { j = { error: 'bad json', raw: t.slice(0, 200) }; }
+      if (!r.ok && j && !j.error) j.error = 'HTTP ' + r.status;
+      return j;
+    });
+  });
+}
+function openExternalLink(url) {
+  if (!url) return;
+  if (NATIVE) { apiFetch('/api/open?url=' + encodeURIComponent(url), { method: 'POST' }).catch(function () { }); return; }
+  var a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 0);
+}
+
+/* ---------- persistence ---------- */
+var saveTimer = null;
+function save() {
+  DB.updatedAt = nowIso();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flushSave, 250);
+  if (syncConfigured()) scheduleSync(2500);
+}
+function flushSave() {
+  var json = JSON.stringify(DB);
+  try { localStorage.setItem('medkit.db', json); } catch (e) { }
+  if (NATIVE) {
+    apiFetch('/api/db', { method: 'POST', body: json, headers: { 'Content-Type': 'application/json' } })
+      .then(function (r) { if (!r.ok) toast('저장 실패 (' + r.status + ')'); })
+      .catch(function () { toast('저장 실패: 앱 내부 서버에 연결할 수 없음'); });
+  }
+}
+function normalizeDb(d) {
+  d.drugs = d.drugs || []; d.bags = d.bags || []; d.settings = d.settings || {}; d.settings.catMap = d.settings.catMap || {};
+  if (!d.settings.ocrLang) d.settings.ocrLang = 'kor';
+  d.photoLocal = d.photoLocal || {};
+  d.drugs.forEach(function (r) { if (!r.updatedAt) r.updatedAt = r.createdAt || nowIso(); });
+  d.bags.forEach(function (r) { if (!r.updatedAt) r.updatedAt = r.createdAt || nowIso(); });
+  return d;
+}
+function loadDb() {
+  var local = null;
+  try { local = JSON.parse(localStorage.getItem('medkit.db') || 'null'); } catch (e) { }
+  var ping = MODE === 'gas' ? Promise.resolve(null) : apiFetch('/api/ping').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  return ping.then(function (p) {
+    NATIVE = !!(p && p.ok && p.native);
+    if (NATIVE) { MODE = 'native'; APP_INFO = p; }
+    if (!NATIVE) return local;
+    return apiJson('/api/db').then(function (d) { return d && d.drugs ? d : local; });
+  }).catch(function () { NATIVE = false; return local; }).then(function (d) {
+    if (d && d.drugs) DB = normalizeDb(d);
+    else normalizeDb(DB);
+    if (MODE === 'gas' && !DB.settings.sync) DB.settings.sync = { url: 'gas', lastPull: 0 };
+    // PWA opened through a team link: ...?team=<apps script url> connects this browser to the shared sheet
+    if (MODE === 'web') {
+      var tm = location.search.match(/[?&]team=([^&]+)/);
+      if (tm) { try { var turl = decodeURIComponent(tm[1]); if (validTeamUrl(turl) && (!DB.settings.sync || DB.settings.sync.url !== turl)) { DB.settings.sync = { url: turl, lastPull: 0 }; DB.drugs.forEach(function (r) { r._dirty = true; }); DB.bags.forEach(function (r) { r._dirty = true; }); UI.joinedViaLink = true; } } catch (e) { } }
+    }
+    return DB;
+  });
+}
+// Apps Script web-app address (personal or Workspace form); 127.0.0.1 is the local test server
+function validTeamUrl(u) {
+  return /^https:\/\/script\.google\.com\/(macros|a\/macros\/[^/]+)\/s\/[^/]+\/exec(\?|$)/.test(u) || /^http:\/\/127\.0\.0\.1:\d+\//.test(u);
+}
+// Web version: keep the team address in the page URL and in the install manifest, so "홈 화면에 추가" (iOS keeps a
+// separate storage for home-screen apps) and Chrome's install both launch straight into the same team.
+function syncTeamToLocation() {
+  if (MODE !== 'web' || !window.history || !history.replaceState) return;
+  var sy = DB.settings && DB.settings.sync, link = qs('link[rel="manifest"]');
+  try {
+    if (sy && sy.url) {
+      var want = '?team=' + encodeURIComponent(sy.url);
+      if (location.search !== want) history.replaceState(null, '', location.pathname + want + location.hash);
+      if (link) {
+        var base = location.href.split(/[?#]/)[0], dir = base.slice(0, base.lastIndexOf('/') + 1), start = base + want;
+        var man = { name: '선교약품', short_name: '선교약품', id: start, start_url: start, scope: dir, display: 'standalone', orientation: 'portrait',
+          background_color: '#F6F7F5', theme_color: '#0F7A5A', lang: 'ko',
+          icons: [{ src: dir + 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: dir + 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }] };
+        link.setAttribute('href', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(man)));
+      }
+    } else {
+      if (location.search.indexOf('team=') >= 0) history.replaceState(null, '', location.pathname + location.hash);
+      if (link) link.setAttribute('href', 'manifest.webmanifest');
+    }
+  } catch (e) { }
+}
+
+/* ---------- records (tombstone deletes so deletions sync) ---------- */
+function liveDrugs() { return DB.drugs.filter(function (d) { return !d.deleted; }); }
+function liveBags() { return DB.bags.filter(function (b) { return !b.deleted; }); }
+function touch(rec) { rec.updatedAt = nowIso(); rec._dirty = true; return rec; }
+function putDrug(rec) { var i = DB.drugs.findIndex(function (d) { return d.id === rec.id; }); touch(rec); if (i >= 0) DB.drugs[i] = rec; else DB.drugs.push(rec); save(); }
+function removeDrug(id) { var r = DB.drugs.filter(function (d) { return d.id === id; })[0]; if (!r) return; if (syncConfigured()) { r.deleted = true; touch(r); } else DB.drugs = DB.drugs.filter(function (d) { return d.id !== id; }); save(); }
+function putBag(rec) { var i = DB.bags.findIndex(function (b) { return b.id === rec.id; }); touch(rec); if (i >= 0) DB.bags[i] = rec; else DB.bags.push(rec); save(); }
+function removeBag(id) { var r = DB.bags.filter(function (b) { return b.id === id; })[0]; if (!r) return; if (syncConfigured()) { r.deleted = true; touch(r); } else DB.bags = DB.bags.filter(function (b) { return b.id !== id; }); save(); }
+
+/* ---------- sync with the shared Google Sheet ---------- */
+var SYNC = { inflight: false, timer: null, status: 'off', message: '', lastOk: 0, periodic: null };
+function syncConfigured() { return MODE === 'gas' || !!(DB.settings && DB.settings.sync && DB.settings.sync.url); }
+function syncUrl() { return DB.settings.sync ? DB.settings.sync.url : ''; }
+/** Call the shared backend. action: ping|pull|push|photo|search|detail */
+function remoteCall(action, params, body) {
+  if (MODE === 'gas') return gasCall(action, Object.assign({}, params || {}, body || {}));
+  var url = syncUrl();
+  if (!url) return Promise.reject(new Error('팀 공유가 설정되지 않았어요'));
+  if (NATIVE) return apiJson('/api/sync', { method: 'POST', body: JSON.stringify({ url: url, action: action, params: params || {}, body: body || null }), headers: { 'Content-Type': 'application/json' } });
+  // plain web preview: talk to Apps Script directly (text/plain POST avoids a CORS preflight)
+  var qsStr = Object.keys(params || {}).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
+  var req = body || action === 'push' || action === 'photo'
+    ? fetch(url, { method: 'POST', body: JSON.stringify(Object.assign({ action: action }, params || {}, body || {})), headers: { 'Content-Type': 'text/plain;charset=utf-8' } })
+    : fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 'action=' + action + (qsStr ? '&' + qsStr : ''));
+  return req.then(function (r) { return r.text(); }).then(function (t) { try { return JSON.parse(t); } catch (e) { throw new Error('공유 서버 응답이 JSON이 아니에요 (웹 앱 URL과 배포 설정을 확인하세요)'); } });
+}
+function setSyncStatus(status, message) {
+  SYNC.status = status; SYNC.message = message || '';
+  if (status === 'ok') SYNC.lastOk = Date.now();
+  qsa('.sync-pill').forEach(function (el) { el.replaceWith(syncPill()); });
+}
+function syncPill() {
+  if (!syncConfigured()) return h('span', { class: 'sync-pill', hidden: true });
+  var txt, cls = 'sync-pill';
+  if (SYNC.status === 'syncing') { txt = '동기화 중…'; cls += ' busy'; }
+  else if (SYNC.status === 'error') { txt = '동기화 실패 · 탭하여 재시도'; cls += ' err'; }
+  else if (SYNC.lastOk) { txt = '공유됨 ' + fmtTime(SYNC.lastOk); cls += ' ok'; }
+  else txt = '공유 연결됨';
+  return h('button', { class: cls, title: SYNC.message || '', onclick: function () { syncNow({ manual: true }); } }, txt);
+}
+function scheduleSync(delay) {
+  if (!syncConfigured()) return;
+  clearTimeout(SYNC.timer);
+  SYNC.timer = setTimeout(function () { syncNow({}); }, delay || 1500);
+}
+function startPeriodicSync() {
+  clearInterval(SYNC.periodic);
+  if (!syncConfigured()) return;
+  SYNC.periodic = setInterval(function () { if (document.visibilityState === 'visible' && !SYNC.inflight) syncNow({}); }, 45000);
+}
+// local photo id ('p…') → uploaded to Drive → 'g:FILEID'; the same device keeps using its local copy through DB.photoLocal
+function uploadLocalPhotos(records, field, multi) {
+  var chain = Promise.resolve();
+  records.forEach(function (rec) {
+    var refs = multi ? (rec[field] || []) : (rec[field] ? [rec[field]] : []);
+    refs.forEach(function (ref, idx) {
+      if (!ref || ref.slice(0, 2) === 'g:' || ref.slice(0, 5) === 'data:') return;
+      chain = chain.then(function () {
+        var up = NATIVE
+          ? apiJson('/api/sync/photo', { method: 'POST', body: JSON.stringify({ url: syncUrl(), id: ref }), headers: { 'Content-Type': 'application/json' } })
+          : Promise.resolve({ ok: false, error: 'no local file' });
+        return up.then(function (j) {
+          if (j && j.ok && j.id) { DB.photoLocal[j.id] = ref; if (multi) rec[field][idx] = j.id; else rec[field] = j.id; rec._dirty = true; }
+        }).catch(function () { });
+      });
+    });
+  });
+  return chain;
+}
+function stripLocal(rec) { var c = {}; Object.keys(rec).forEach(function (k) { if (k.charAt(0) !== '_') c[k] = rec[k]; }); return c; }
+function mergeIncoming(list, incoming) {
+  var changed = 0;
+  var index = {}; list.forEach(function (r, i) { index[r.id] = i; });
+  incoming.forEach(function (inc) {
+    if (!inc || !inc.id) return;
+    var i = index[inc.id];
+    if (i === undefined) { if (!inc.deleted) { list.push(inc); changed++; } else { list.push(inc); } return; }
+    var cur = list[i];
+    var tInc = Date.parse(inc.updatedAt || '') || 0, tCur = Date.parse(cur.updatedAt || '') || 0;
+    if (cur._dirty && tCur >= tInc) return;        // our unsynced edit is newer: keep it
+    if (tInc < tCur) return;                        // ours is newer and already synced
+    if (JSON.stringify(stripLocal(cur)) === JSON.stringify(inc)) return;
+    list[i] = inc; changed++;
+  });
+  return changed;
+}
+function purgeTombstones() {
+  var cutoff = Date.now() - 30 * 86400000;
+  var keep = function (r) { return !(r.deleted && !r._dirty && (Date.parse(r.updatedAt || '') || 0) < cutoff); };
+  DB.drugs = DB.drugs.filter(keep); DB.bags = DB.bags.filter(keep);
+}
+function syncNow(opts) {
+  opts = opts || {};
+  if (!syncConfigured()) return Promise.resolve(false);
+  if (SYNC.inflight) { if (opts.manual) toast('이미 동기화 중이에요'); return Promise.resolve(false); }
+  SYNC.inflight = true; setSyncStatus('syncing');
+  var dirtyDrugs = DB.drugs.filter(function (d) { return d._dirty; }), dirtyBags = DB.bags.filter(function (b) { return b._dirty; });
+  var since = Math.max(0, (DB.settings.sync.lastPull || 0) - 120000);
+  return uploadLocalPhotos(dirtyDrugs, 'photo', false).then(function () { return uploadLocalPhotos(dirtyBags, 'photos', true); }).then(function () {
+    if (!dirtyDrugs.length && !dirtyBags.length) return null;
+    return remoteCall('push', {}, { drugs: dirtyDrugs.map(stripLocal), bags: dirtyBags.map(stripLocal) }).then(function (res) {
+      if (!res || !res.ok) throw new Error(res && res.error || '업로드 실패');
+      var applied = {}; (res.applied || []).forEach(function (id) { applied[id] = 1; });
+      dirtyDrugs.concat(dirtyBags).forEach(function (r) { if (applied[r.id]) delete r._dirty; });
+      (res.rejected || []).forEach(function (rj) { var r = DB.drugs.concat(DB.bags).filter(function (x) { return x.id === rj.id; })[0]; if (r) delete r._dirty; }); // server copy is newer: pull will bring it
+      return res;
+    });
+  }).then(function () {
+    return remoteCall('pull', { since: since });
+  }).then(function (res) {
+    if (!res || !res.ok) throw new Error(res && res.error || '내려받기 실패');
+    var changed = mergeIncoming(DB.drugs, res.drugs || []) + mergeIncoming(DB.bags, res.bags || []);
+    DB.settings.sync.lastPull = res.time || Date.now();
+    purgeTombstones();
+    clearTimeout(saveTimer); flushSave();
+    SYNC.inflight = false; setSyncStatus('ok');
+    if (changed) { render(); if (opts.manual) toast('공유 데이터 ' + changed + '건 업데이트됨'); }
+    else if (opts.manual) toast('최신 상태예요');
+    return true;
+  }).catch(function (e) {
+    SYNC.inflight = false;
+    setSyncStatus('error', String(e && e.message || e));
+    if (opts.manual) toast('동기화 실패: ' + (e && e.message || e));
+    return false;
+  });
+}
+
+/* ---------- photos ---------- */
+function photoUrl(ref) {
+  if (!ref) return '';
+  if (ref.slice(0, 5) === 'data:') return ref;
+  if (ref.slice(0, 2) === 'g:') {
+    var local = DB.photoLocal && DB.photoLocal[ref];
+    if (local && NATIVE) return apiUrl('/photos/' + local + '.jpg');
+    return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(ref.slice(2)) + '&sz=w1200';
+  }
+  if (!NATIVE) return '';
+  return apiUrl('/photos/' + ref + '.jpg');
+}
+// Resize an image File/Blob to a JPEG blob (max side px), honoring EXIF orientation.
+function resizeImage(file, maxSide, quality) {
+  maxSide = maxSide || 1600; quality = quality || 0.85;
+  var opts = { imageOrientation: 'from-image' };
+  var p = (window.createImageBitmap ? createImageBitmap(file, opts).catch(function () { return createImageBitmap(file); }) : Promise.reject());
+  return p.catch(function () {
+    return new Promise(function (res, rej) {
+      var img = new Image(); var u = URL.createObjectURL(file);
+      img.onload = function () { URL.revokeObjectURL(u); res(img); };
+      img.onerror = function () { URL.revokeObjectURL(u); rej(new Error('이미지를 읽을 수 없음')); };
+      img.src = u;
+    });
+  }).then(function (bmp) {
+    var w = bmp.width, hgt = bmp.height, s = Math.min(1, maxSide / Math.max(w, hgt));
+    var c = document.createElement('canvas'); c.width = Math.round(w * s); c.height = Math.round(hgt * s);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    if (bmp.close) bmp.close();
+    return new Promise(function (res) { c.toBlob(function (b) { res({ blob: b, canvas: c }); }, 'image/jpeg', quality); });
+  });
+}
+function uploadPhoto(blob) {
+  if (MODE === 'gas') {
+    return blobToBase64(blob).then(function (b64) { return gasCall('photo', { id: 'p' + uid(), data: b64 }); })
+      .then(function (j) { if (!j || !j.ok || !j.id) throw new Error(j && j.error || '사진 업로드 실패'); return j.id; });
+  }
+  if (!NATIVE && syncConfigured()) {
+    return blobToBase64(blob).then(function (b64) { return remoteCall('photo', {}, { id: 'p' + uid(), data: b64 }); })
+      .then(function (j) { if (!j || !j.ok || !j.id) throw new Error(j && j.error || '사진 업로드 실패'); return j.id; });
+  }
+  if (!NATIVE) {
+    // plain web preview without a team: data URL (kept small)
+    return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.readAsDataURL(blob); });
+  }
+  return apiFetch('/api/photo', { method: 'POST', body: blob, headers: { 'Content-Type': 'image/jpeg' } })
+    .then(function (r) { return r.json(); }).then(function (j) { if (!j.id) throw new Error(j.error || '사진 저장 실패'); return j.id; });
+}
+function deletePhoto(ref) {
+  if (!NATIVE || !ref) return Promise.resolve();
+  var local = ref.slice(0, 2) === 'g:' ? DB.photoLocal[ref] : ref;
+  if (!local || local.slice(0, 5) === 'data:') return Promise.resolve();
+  return apiFetch('/api/photo/delete?id=' + encodeURIComponent(local), { method: 'POST' }).catch(function () { });
+}
+// Opens the camera (capture) or gallery, returns Promise<File[]>
+function pickImages(mode, multiple) {
+  return new Promise(function (res) {
+    var input = qs(mode === 'camera' ? '#pick-photo' : '#pick-gallery');
+    input.multiple = !!multiple && mode !== 'camera';
+    input.value = '';
+    var done = false;
+    input.onchange = function () { done = true; res(Array.prototype.slice.call(input.files || [])); };
+    // if the user cancels, onchange never fires; resolve on next focus
+    var onFocus = function () { setTimeout(function () { window.removeEventListener('focus', onFocus); if (!done) res([]); }, 700); };
+    window.addEventListener('focus', onFocus);
+    input.click();
+  });
+}
+
+/* ---------- drug helpers ---------- */
+var FORM_CODES = ['T', 'C', '포', '액상', '크림', '병', '주사', '패치', '기타'];
+function formCode(raw) {
+  var f = String(raw || '');
+  if (!f) return '';
+  if (/주사/.test(f)) return '주사';
+  if (/점안|점이|점비/.test(f)) return '병';
+  if (/크림|연고|겔|젤|로션|외용액|스프레이/.test(f)) return '크림';
+  if (/시럽|액|현탁|엘릭서|드링크|용액/.test(f)) return '액상';
+  if (/산제|과립|세립|분말|가루|포|건조시럽/.test(f)) return '포';
+  if (/캡슐|캅셀/.test(f)) return 'C';
+  if (/정|트로키|츄어블|필름/.test(f)) return 'T';
+  if (/패치|첩부|플라스타/.test(f)) return '패치';
+  return '기타';
+}
+// "Trimebutine Maleate 300mg@Other 10mg@" → {ingredient:"Trimebutine Maleate + Other", strength:"300/10mg"}
+function splitIngredients(s) {
+  var parts = String(s || '').split(/@|\s*\+\s*|,\s*(?=[A-Za-z가-힣])/).map(function (x) { return x.trim(); }).filter(Boolean);
+  var names = [], amts = [], units = [];
+  parts.forEach(function (p) {
+    var m = p.match(/^(.*?)[\s]*([\d.,]+\s*[a-zA-Zμ%/]+(?:\/[\d.,]*[a-zA-Z]*)?)\s*$/);
+    if (m && m[1]) { names.push(m[1].trim()); var am = m[2].replace(/\s+/g, ''); var mm = am.match(/^([\d.,]+)([a-zA-Zμ%/]+.*)$/); if (mm) { amts.push(mm[1]); units.push(mm[2]); } else { amts.push(am); units.push(''); } }
+    else names.push(p);
+  });
+  var strength = '';
+  if (amts.length) {
+    var sameUnit = units.every(function (u) { return u === units[0]; });
+    strength = sameUnit ? amts.join('/') + units[0] : amts.map(function (a, i) { return a + units[i]; }).join('/');
+  }
+  return { ingredient: names.join(' + '), strength: strength };
+}
+// parse "내수용 - 100정/병,내수용 - 30정/병,수출용 - 30정/상자[(10정/PTPX3)]" → [100, 30]
+function parsePackUnits(s) {
+  var out = [];
+  String(s || '').split(/,(?![^\[]*\])/).forEach(function (seg) {
+    if (/수출용/.test(seg)) return;
+    var m = seg.match(/(\d[\d,]*)\s*(정|캡슐|포|개|매|병|관|앰플|바이알|튜브|ml|mL|g)/);
+    if (m) { var n = parseInt(m[1].replace(/,/g, ''), 10); if (n && out.indexOf(n) < 0) out.push(n); }
+  });
+  return out;
+}
+// expiry parsing: returns {value:"YYYY-MM-DD"|"YYYY-MM"|"YYYY"|"미정"|"", ok:boolean, label}
+function parseExpiry(input) {
+  var s = String(input || '').trim();
+  if (!s) return { value: '', ok: true, label: '' };
+  if (/^(미정|없음|\?|-)$/.test(s)) return { value: '미정', ok: true, label: '미정' };
+  var d = s.replace(/[^\d]/g, '');
+  var y, m, day;
+  if (/^\d{4}[-./]\d{1,2}[-./]\d{1,2}$/.test(s)) { var a = s.split(/[-./]/); y = +a[0]; m = +a[1]; day = +a[2]; }
+  else if (/^\d{2}[-./]\d{1,2}[-./]\d{1,2}$/.test(s)) { var b = s.split(/[-./]/); y = 2000 + (+b[0]); m = +b[1]; day = +b[2]; }
+  else if (/^\d{4}[-./]\d{1,2}$/.test(s)) { var c = s.split(/[-./]/); y = +c[0]; m = +c[1]; }
+  else if (/^\d{2}[-./]\d{1,2}$/.test(s)) { var e = s.split(/[-./]/); y = 2000 + (+e[0]); m = +e[1]; }
+  else if (d.length === 8) { y = +d.slice(0, 4); m = +d.slice(4, 6); day = +d.slice(6, 8); }
+  else if (d.length === 6) { if (+d.slice(0, 2) >= 20 && +d.slice(0, 2) <= 40) { y = 2000 + (+d.slice(0, 2)); m = +d.slice(2, 4); day = +d.slice(4, 6); } else { y = +d.slice(0, 4); m = +d.slice(4, 6); } }
+  else if (d.length === 4) { if (+d >= 2000 && +d <= 2100) { y = +d; } else { y = 2000 + (+d.slice(0, 2)); m = +d.slice(2, 4); } }
+  else if (d.length === 2) { y = 2000 + (+d); }
+  else return { value: s, ok: false, label: '형식을 알 수 없음 (예: 2027-05-12, 270512, 2027.05)' };
+  if (!y || y < 2000 || y > 2100) return { value: s, ok: false, label: '연도 확인 필요' };
+  if (m !== undefined && (m < 1 || m > 12)) return { value: s, ok: false, label: '월(1~12) 확인 필요' };
+  if (day !== undefined && (day < 1 || day > 31)) return { value: s, ok: false, label: '일(1~31) 확인 필요' };
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var v = String(y) + (m !== undefined ? '-' + pad(m) : '') + (day !== undefined ? '-' + pad(day) : '');
+  return { value: v, ok: true, label: v + (day === undefined ? (m === undefined ? ' (연도만)' : ' (월까지)') : '') };
+}
+function expiryDate(v) {
+  if (!v || v === '미정') return null;
+  var p = v.split('-'); var y = +p[0], m = p[1] ? +p[1] : 12, d = p[2] ? +p[2] : 0;
+  if (!d) return new Date(y, m, 0); // last day of month / year
+  return new Date(y, m - 1, d);
+}
+function expiryClass(v) {
+  var d = expiryDate(v); if (!d) return 'none';
+  var days = (d - new Date()) / 86400000;
+  if (days < 0) return 'expired';
+  if (days < 120) return 'urgent';
+  if (days < 365) return 'soon';
+  return '';
+}
+function stamp(v) {
+  var cls = expiryClass(v);
+  return h('span', { class: 'stamp ' + cls }, v || '유효기간 없음');
+}
+function drugTotal(d) {
+  if (d.total !== null && d.total !== undefined && d.total !== '') return Number(d.total);
+  if (d.packUnit != null && d.packCount != null) return Number(d.packUnit) * Number(d.packCount);
+  return null;
+}
+function groupKey(d) { return (d.name || '').replace(/\s+/g, '') + '|' + (d.strength || '').replace(/\s+/g, ''); }
+function catMapKey(kpic) { return kpic && kpic.path ? kpic.path.slice(0, 2).join('|') : ''; }
+
+/* drugs.js — 의약품 tab: inventory list, 약학정보원 search, lot add/edit */
+'use strict';
+
+var searchTimer = null, searchSeq = 0;
+
+function renderDrugs(root) {
+  root.innerHTML = '';
+  var top = h('div', { class: 'topbar' },
+    h('div', { class: 'topbar-row' },
+      h('div', { class: 'searchbox' },
+        h('span', { style: 'font-size:18px;color:var(--ink-3)' }, '🔍'),
+        h('input', { id: 'q', type: 'search', placeholder: '약 이름 입력 (예: 뉴부틴)', value: UI.query, autocomplete: 'off',
+          oninput: function (e) { UI.query = e.target.value; UI.ocrPrefill = null; scheduleSearch(); renderDrugBody(); },
+          onkeydown: function (e) { if (e.key === 'Enter') { e.preventDefault(); runSearch(true); e.target.blur(); } } }),
+        UI.query ? h('button', { class: 'clear', 'aria-label': '지우기', onclick: function () { UI.query = ''; UI.results = null; UI.searchError = ''; render(); setTimeout(function () { var i = qs('#q'); if (i) i.focus(); }, 0); } }, '✕') : null),
+      h('button', { class: 'iconbtn', title: '사진으로 찾기', 'aria-label': '사진으로 찾기', onclick: function () { startOcr(); } }, '📷'),
+      h('button', { class: 'iconbtn primary', title: '직접 입력', 'aria-label': '직접 입력', onclick: function () { openAddSheet({}, { mode: 'add' }); } }, '＋')),
+    h('div', { class: 'subbar', style: 'padding-left:0;padding-right:0' },
+      syncPill(), filterChip('all', '전체'), filterChip('soon', '유효기간 1년 이내'), filterChip('expired', '만료'), filterChip('nocat', '분류 없음')));
+  root.appendChild(top);
+  root.appendChild(h('div', { id: 'drug-body' }));
+  renderDrugBody();
+}
+function filterChip(key, label) {
+  return h('button', { class: 'chip' + (UI.filter === key ? ' on' : '') + (key === 'expired' ? ' warn' : ''), onclick: function () { UI.filter = key; renderDrugBody(); qsa('.subbar .chip').forEach(function (c) { c.classList.toggle('on', c.textContent === label); }); } }, label);
+}
+
+function scheduleSearch() {
+  clearTimeout(searchTimer);
+  var q = UI.query.trim();
+  if (q.length < 2) { UI.results = null; UI.searching = false; UI.searchError = ''; return; }
+  UI.searching = true;
+  searchTimer = setTimeout(function () { runSearch(false); }, 650);
+}
+function runSearch(force) {
+  clearTimeout(searchTimer);
+  var q = UI.query.trim();
+  if (q.length < (force ? 1 : 2)) return;
+  var seq = ++searchSeq;
+  UI.searching = true; UI.searchError = '';
+  renderDrugBody();
+  apiJson('/api/search?q=' + encodeURIComponent(q)).then(function (j) {
+    if (seq !== searchSeq) return;
+    UI.searching = false;
+    if (j.error) { UI.searchError = j.error; UI.results = []; }
+    else { UI.results = j.items || []; UI.resultsTotal = j.total || UI.results.length; }
+    renderDrugBody();
+  }).catch(function (e) {
+    if (seq !== searchSeq) return;
+    UI.searching = false; UI.searchError = String(e && e.message || e); UI.results = []; renderDrugBody();
+  });
+}
+
+function inventoryGroups(filterFn) {
+  var map = {}, order = [];
+  liveDrugs().forEach(function (d) {
+    if (filterFn && !filterFn(d)) return;
+    var k = groupKey(d);
+    if (!map[k]) { map[k] = { key: k, name: d.name, strength: d.strength, form: d.form, cat1: d.cat1, cat2: d.cat2, ingredient: d.ingredient, lots: [], total: 0, code: d.code }; order.push(k); }
+    var g = map[k]; g.lots.push(d); var t = drugTotal(d); if (t) g.total += t;
+    if (!g.code && d.code) g.code = d.code;
+    if (!g.cat1 && d.cat1) { g.cat1 = d.cat1; g.cat2 = d.cat2; }
+  });
+  return order.map(function (k) { var g = map[k]; g.lots.sort(function (a, b) { return (a.expiry || 'z').localeCompare(b.expiry || 'z'); }); return g; });
+}
+function matchesQuery(d, q) {
+  var n = q.replace(/\s+/g, '').toLowerCase();
+  return [d.name, d.ingredient, d.strength, d.cat1, d.cat2, d.donor].some(function (f) { return f && String(f).replace(/\s+/g, '').toLowerCase().indexOf(n) >= 0; });
+}
+
+function renderDrugBody() {
+  var body = qs('#drug-body'); if (!body) return;
+  body.innerHTML = '';
+  var q = UI.query.trim();
+  if (q) { renderSearchMode(body, q); return; }
+
+  var filt = null;
+  if (UI.filter === 'soon') filt = function (d) { var c = expiryClass(d.expiry); return c === 'soon' || c === 'urgent' || c === 'expired'; };
+  if (UI.filter === 'expired') filt = function (d) { return expiryClass(d.expiry) === 'expired'; };
+  if (UI.filter === 'nocat') filt = function (d) { return !d.cat1; };
+  var groups = inventoryGroups(filt);
+  if (!liveDrugs().length) {
+    body.appendChild(h('div', { class: 'empty' },
+      h('h2', null, '아직 등록된 약이 없어요'),
+      h('p', null, '위 검색창에 약 이름을 치거나 📷 로 약 상자를 찍으면 약학정보원 정보로 바로 추가할 수 있어요.'),
+      h('div', { class: 'actions' },
+        MODE !== 'gas' ? h('button', { class: 'btn primary', onclick: function () { importSeed(); } }, '엑셀 원본 리스트 (164건) 불러오기') : null,
+        h('button', { class: 'btn', onclick: function () { openAddSheet({}, { mode: 'add' }); } }, '직접 입력으로 추가'))));
+    return;
+  }
+  if (!groups.length) { body.appendChild(h('div', { class: 'empty' }, h('h2', null, '해당하는 약이 없어요'), h('p', null, '필터를 바꿔 보세요.'))); return; }
+  // group by 대분류
+  var byCat = {}, catOrder = [];
+  groups.forEach(function (g) { var c = g.cat1 || '분류 없음'; if (!byCat[c]) { byCat[c] = []; catOrder.push(c); } byCat[c].push(g); });
+  catOrder.sort(function (a, b) { if (a === '분류 없음') return 1; if (b === '분류 없음') return -1; return a.localeCompare(b, 'ko'); });
+  var list = h('div', { class: 'list' });
+  catOrder.forEach(function (c) {
+    var gs = byCat[c].sort(function (a, b) { return (a.cat2 || '').localeCompare(b.cat2 || '', 'ko') || a.name.localeCompare(b.name, 'ko'); });
+    var lotCount = gs.reduce(function (s, g) { return s + g.lots.length; }, 0);
+    list.appendChild(h('div', { class: 'group-h' }, c, h('span', { class: 'cnt' }, gs.length + '종 · ' + lotCount + '건')));
+    gs.forEach(function (g) { list.appendChild(groupCard(g)); });
+  });
+  body.appendChild(list);
+}
+function groupCard(g) {
+  var lots = h('div', { class: 'lots' });
+  g.lots.slice(0, 6).forEach(function (l) {
+    var s = stamp(l.expiry || '');
+    var t = drugTotal(l);
+    s.appendChild(h('span', { class: 'q' }, (l.packUnit && l.packCount ? fmtNum(l.packUnit) + '×' + fmtNum(l.packCount) : (t != null ? fmtNum(t) : '-'))));
+    lots.appendChild(s);
+  });
+  if (g.lots.length > 6) lots.appendChild(h('span', { class: 'stamp none' }, '+' + (g.lots.length - 6)));
+  return h('button', { class: 'card', onclick: function () { openGroupSheet(g.key); } },
+    h('div', { class: 'drug-row' },
+      h('div', null,
+        h('div', { class: 'drug-name' }, g.name, g.strength ? h('span', { class: 'tag' }, g.strength) : null, g.form ? h('span', { class: 'tag form' }, g.form) : null),
+        h('div', { class: 'drug-sub' }, g.cat2 ? h('span', null, g.cat2) : null, g.ingredient ? h('span', null, g.ingredient) : null)),
+      h('div', { class: 'drug-total' }, h('b', { class: 'num' }, fmtNum(g.total)), h('small', null, g.lots.length > 1 ? g.lots.length + '개 로트' : '총 개수'))),
+    lots);
+}
+
+function renderSearchMode(body, q) {
+  var inv = inventoryGroups(function (d) { return matchesQuery(d, q); });
+  if (inv.length) {
+    body.appendChild(h('div', { class: 'section-title' }, '내 재고', h('span', { class: 'src' }, inv.length + '종')));
+    var l1 = h('div', { class: 'list' });
+    inv.slice(0, 20).forEach(function (g) { l1.appendChild(groupCard(g)); });
+    body.appendChild(l1);
+  }
+  var title = h('div', { class: 'section-title' }, '약학정보원 검색', UI.searching ? h('span', { class: 'spinner' }) : null,
+    h('span', { class: 'src' }, UI.results && !UI.searching ? (UI.resultsTotal || UI.results.length) + '건' : ''));
+  body.appendChild(title);
+  if (q.length < 2 && !UI.results) { body.appendChild(h('div', { class: 'notice' }, '두 글자 이상 입력하면 자동으로 검색합니다.')); return; }
+  if (UI.searchError) {
+    body.appendChild(h('div', { class: 'notice err' }, '검색 실패: ' + UI.searchError + (NATIVE ? '' : ' (약학정보원 검색은 앱에서만 됩니다)')));
+    body.appendChild(h('div', { class: 'list' }, h('button', { class: 'btn', onclick: function () { runSearch(true); } }, '다시 검색'), h('button', { class: 'btn', onclick: function () { openAddSheet({ name: q }, { mode: 'add' }); } }, '"' + q + '" 직접 입력으로 추가')));
+    return;
+  }
+  if (!UI.results) { if (!UI.searching) body.appendChild(h('div', { class: 'notice' }, '검색 중…')); return; }
+  if (!UI.results.length) {
+    body.appendChild(h('div', { class: 'notice' }, '약학정보원에 "' + q + '" 검색 결과가 없어요. 띄어쓰기를 빼거나 앞 두세 글자만 넣어 보세요.'));
+    body.appendChild(h('div', { class: 'list' }, h('button', { class: 'btn', onclick: function () { openAddSheet({ name: q }, { mode: 'add' }); } }, '"' + q + '" 직접 입력으로 추가')));
+    return;
+  }
+  var list = h('div', { class: 'list' });
+  UI.results.forEach(function (it) {
+    var inInv = liveDrugs().some(function (d) { return d.code === it.drug_code; });
+    list.appendChild(h('button', { class: 'card', onclick: function () { pickResult(it); } },
+      h('div', { class: 'result' },
+        h('div', null,
+          h('div', { class: 'r-name' }, it.drug_name, inInv ? h('span', { class: 'tag form', style: 'margin-left:6px' }, '재고 있음') : null),
+          h('div', { class: 'r-sub' }, [it.list_sunb_name, it.upso_name_kfda].filter(Boolean).join(' · ')),
+          h('div', { class: 'r-sub' }, [it.cls_name, it.drug_class].filter(Boolean).join(' · '))),
+        h('div', { class: 'r-side' }, it.drug_form || ''))));
+  });
+  body.appendChild(list);
+}
+
+/* ---------- picking a 약학정보원 result ---------- */
+function pickResult(it) {
+  var loading = openSheet({ title: it.drug_name, locked: true, render: function (c) { c.body.appendChild(h('div', { class: 'notice' }, h('span', { class: 'spinner' }), ' 약학정보원 상세정보 가져오는 중…')); } });
+  apiJson('/api/detail?code=' + encodeURIComponent(it.drug_code)).then(function (det) {
+    loading.close();
+    openAddSheet(prefillFrom(it, det && det.ok ? det : null), { mode: 'add' });
+  }).catch(function () { loading.close(); openAddSheet(prefillFrom(it, null), { mode: 'add' }); });
+}
+function normCls(s) { return String(s || '').replace(/^기타의\s*/, '').replace(/^기타\s+/, '').trim(); }
+function prefillFrom(it, det) {
+  var si = splitIngredients(it.ingr_mg || it.list_sunb_name || '');
+  var p = {
+    name: it.drug_name || '', strength: si.strength, ingredient: si.ingredient,
+    formRaw: it.drug_form || '', form: formCode(it.drug_form), code: it.drug_code, kfda: it.kfda_code, company: it.upso_name_kfda || '',
+    cls: normCls(it.cls_name), packOptions: [], cat1: '', cat2: ''
+  };
+  if (det) {
+    if (det.ingredients && det.ingredients.length) {
+      var en = det.ingredients.map(function (x) { return x.en || x.ko; }).join(' + ');
+      var amts = det.ingredients.map(function (x) { return x.amount || ''; });
+      if (en) p.ingredient = en;
+      var units = amts.map(function (a) { return (a.match(/[a-zA-Zμ%].*$/) || [''])[0]; });
+      var nums = amts.map(function (a) { return (a.match(/^[\d.,]+/) || [''])[0]; });
+      if (nums.every(Boolean)) p.strength = units.every(function (u) { return u === units[0]; }) ? nums.join('/') + units[0] : amts.join('/');
+      p.ingredientKo = det.ingredients.map(function (x) { return x.ko; }).join(' + ');
+    }
+    if (det.form) { p.formRaw = det.form; p.form = formCode(det.form); }
+    if (det.packRaw) { p.packRaw = det.packRaw; p.packOptions = parsePackUnits(det.packRaw); }
+    if (det.kpic && det.kpic.path && det.kpic.path.length) p.kpic = det.kpic;
+    if (det.company) p.company = det.company;
+    if (det.cls) p.cls = normCls(det.cls);
+  }
+  // category suggestion
+  var opts1 = [], opts2 = [];
+  if (p.cls) opts1.push(p.cls);
+  if (p.kpic) { if (p.kpic.path[0]) opts1.push(p.kpic.path[0]); if (p.kpic.path[1]) opts2.push(p.kpic.path[1]); if (p.kpic.path[2]) opts2.push(p.kpic.path[2]); }
+  // learned mapping
+  var learned = p.kpic ? DB.settings.catMap[catMapKey(p.kpic)] : null;
+  if (!learned && p.cls) learned = DB.settings.catMap['cls|' + p.cls];
+  p.cat1 = learned && learned.cat1 ? learned.cat1 : (opts1[0] || '');
+  p.cat2 = learned && learned.cat2 ? learned.cat2 : (opts2[0] || '');
+  // also reuse categories from an existing lot of the same drug
+  var same = liveDrugs().filter(function (d) { return (p.code && d.code === p.code) || groupKey(d) === groupKey(p); })[0];
+  if (same) { if (same.cat1) p.cat1 = same.cat1; if (same.cat2) p.cat2 = same.cat2; if (same.packUnit && p.packOptions.indexOf(same.packUnit) < 0) p.packOptions.unshift(same.packUnit); if (!p.strength && same.strength) p.strength = same.strength; if (same.form && !p.form) p.form = same.form; }
+  p.cat1Options = uniq(opts1.concat(existingCats(1))); p.cat2Options = uniq(opts2.concat(existingCats(2)));
+  if (p.packOptions.length && p.packUnit == null) p.packUnit = p.packOptions[0];
+  return p;
+}
+function uniq(a) { var s = {}; return a.filter(function (x) { if (!x || s[x]) return false; s[x] = 1; return true; }); }
+function existingCats(level) {
+  var cnt = {};
+  liveDrugs().forEach(function (d) { var v = level === 1 ? d.cat1 : d.cat2; if (v) cnt[v] = (cnt[v] || 0) + 1; });
+  return Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; }).slice(0, 12);
+}
+
+/* ---------- add / edit sheet ---------- */
+function openAddSheet(p, opts) {
+  opts = opts || { mode: 'add' };
+  p = p || {};
+  var edit = opts.mode === 'edit';
+  var orig = edit ? DB.drugs.filter(function (d) { return d.id === opts.id; })[0] : null;
+  if (edit && !orig) return;
+  // facts read from the photo (유효기간 · 포장단위 · 사진) flow into a new lot once, then are cleared
+  var pre = (!edit && UI.ocrPrefill) ? UI.ocrPrefill : null; UI.ocrPrefill = null;
+  if (pre) {
+    if (pre.expiry && !p.expiry) p.expiry = pre.expiry;
+    if (pre.packUnit) { if (p.packUnit == null || (p.packOptions || []).indexOf(pre.packUnit) >= 0) p.packUnit = pre.packUnit; p.packOptions = uniq([pre.packUnit].concat(p.packOptions || [])); }
+  }
+  var m = edit ? JSON.parse(JSON.stringify(orig)) : {
+    cat1: p.cat1 || '', cat2: p.cat2 || '', ingredient: p.ingredient || '', name: p.name || '', strength: p.strength || '',
+    packUnit: p.packUnit != null ? p.packUnit : null, packCount: p.packCount != null ? p.packCount : null, total: null,
+    form: p.form || '', formRaw: p.formRaw || '', expiry: p.expiry || '', donor: p.donor || '', donation: p.donation || '', part: p.part || '',
+    memo: '', photo: p.photo || '', code: p.code || '', kfda: p.kfda || '', company: p.company || '', kpic: p.kpic || null, cls: p.cls || ''
+  };
+  var totalOverride = edit && orig.total != null && orig.packUnit != null && orig.packCount != null && Number(orig.total) !== Number(orig.packUnit) * Number(orig.packCount);
+  var showAuto = !(m.name && (p.code || edit));
+  var existing = liveDrugs().filter(function (d) { return (!edit || d.id !== m.id) && (m.code && d.code === m.code || groupKey(d) === groupKey(m)); });
+  var ctx;
+  var cat1Options = p.cat1Options || uniq([m.cat1].concat(existingCats(1)));
+  var cat2Options = p.cat2Options || uniq([m.cat2].concat(existingCats(2)));
+  var packOptions = p.packOptions || uniq([m.packUnit].filter(function (x) { return x != null; }));
+
+  function field(label, key, attrs, extra) {
+    attrs = attrs || {};
+    var input = h(attrs.textarea ? 'textarea' : 'input', Object.assign({ value: m[key] == null ? '' : m[key], placeholder: attrs.placeholder || '', type: attrs.type || 'text', inputmode: attrs.inputmode, class: attrs.big ? 'big' : '', id: 'f-' + key,
+      oninput: function (e) { m[key] = attrs.num ? toNum(e.target.value) : e.target.value; if (attrs.oninput) attrs.oninput(e); } }, attrs.textarea ? { html: esc(m[key] || '') } : {}));
+    if (attrs.enter) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); attrs.enter(); } });
+    var f = h('div', { class: 'field' + (attrs.cls ? ' ' + attrs.cls : '') }, h('label', { for: 'f-' + key }, label, attrs.hint ? h('span', { class: 'hint' }, attrs.hint) : null), input);
+    if (extra) f.appendChild(extra);
+    return f;
+  }
+  function chipRow(options, onPick) {
+    if (!options || !options.length) return null;
+    return h('div', { class: 'chips', style: 'margin-top:6px' }, options.map(function (o) { return h('button', { type: 'button', class: 'chip sm', onclick: function () { onPick(o); } }, String(o)); }));
+  }
+
+  function renderBody(c) {
+    var b = c.body; b.innerHTML = '';
+    if (!edit && existing.length) {
+      var ex = h('div', { class: 'notice', style: 'margin:8px 0' }, '이미 ' + existing.length + '개 로트가 있어요 — 기존 것을 바꾸지 않고 새 로트로 추가됩니다. ',
+        h('div', { class: 'lots' }, existing.slice(0, 5).map(function (l) { var s = stamp(l.expiry); s.appendChild(h('span', { class: 'q' }, fmtNum(drugTotal(l)))); return s; })));
+      b.appendChild(ex);
+    }
+    // auto-filled summary box
+    var auto = h('div', { class: 'auto-box' });
+    var autoHead = h('div', { class: 'ab-h' }, p.code ? '약학정보원 자동 채움' : (edit ? '약 정보' : '약 정보 입력'),
+      h('button', { type: 'button', class: 'collapse-btn', onclick: function () { showAuto = !showAuto; renderBody(c); } }, showAuto ? '접기' : '수정'));
+    auto.appendChild(autoHead);
+    if (!showAuto) {
+      auto.appendChild(h('dl', null,
+        h('dt', null, '의약품명'), h('dd', null, m.name || '-'),
+        h('dt', null, '함량'), h('dd', null, m.strength || '-'),
+        h('dt', null, '성분명'), h('dd', null, m.ingredient || '-'),
+        h('dt', null, '분류'), h('dd', null, [m.cat1, m.cat2].filter(Boolean).join(' › ') || '-'),
+        h('dt', null, '제형'), h('dd', null, (m.form || '-') + (m.formRaw ? ' (' + m.formRaw + ')' : ''))));
+    } else {
+      auto.appendChild(field('의약품명', 'name', { placeholder: '예: 뉴부틴서방정' }));
+      auto.appendChild(h('div', { class: 'grid-2' },
+        field('함량', 'strength', { placeholder: '예: 300mg' }),
+        field('제형', 'form', { placeholder: 'T / C / 포 …' }, chipRow(FORM_CODES, function (o) { m.form = o; qs('#f-form').value = o; }))));
+      auto.appendChild(field('성분명', 'ingredient', { placeholder: '예: Trimebutine Maleate' }));
+      auto.appendChild(field('대분류', 'cat1', { placeholder: '예: 소화기관용약' }, chipRow(cat1Options, function (o) { m.cat1 = o; qs('#f-cat1').value = o; })));
+      auto.appendChild(field('소분류', 'cat2', { placeholder: '예: 위장관 운동조절' }, chipRow(cat2Options, function (o) { m.cat2 = o; qs('#f-cat2').value = o; })));
+      if (m.kpic && m.kpic.path) auto.appendChild(h('div', { class: 'muted', style: 'font-size:12px' }, 'KPIC 약효분류: ' + m.kpic.path.join(' › ')));
+    }
+    b.appendChild(auto);
+
+    // the two quick inputs
+    var help = h('div', { class: 'help' });
+    function updateHelp() { var r = parseExpiry(qs('#f-expiry').value); help.textContent = r.label; help.className = 'help ' + (r.ok ? (r.value ? 'ok' : '') : 'bad'); }
+    b.appendChild(field('유효기간', 'expiry', { big: true, inputmode: 'numeric', placeholder: '2027-05-12 / 270512 / 2027.05', hint: '년도만 쳐도 돼요', oninput: updateHelp, enter: function () { var n = qs('#f-packCount'); if (n) n.focus(); } }, help));
+    setTimeout(updateHelp, 0);
+    var totalLine = h('div', { class: 'total-line' }, h('span', null, '총 개수'), h('b', { class: 'num', id: 'f-totalview' }, '-'));
+    function updateTotal() {
+      var auto = (m.packUnit != null && m.packCount != null) ? Number(m.packUnit) * Number(m.packCount) : null;
+      if (!totalOverride) m.total = auto;
+      qs('#f-totalview').textContent = fmtNum(m.total != null ? m.total : auto);
+      var ti = qs('#f-total'); if (ti && !totalOverride) ti.value = auto == null ? '' : auto;
+    }
+    b.appendChild(h('div', { class: 'grid-3' },
+      field('포장단위', 'packUnit', { big: true, inputmode: 'numeric', num: true, placeholder: '100', hint: '1통/1박스당', oninput: updateTotal, enter: function () { qs('#f-packCount').focus(); } }),
+      h('div', { class: 'times' }, '×'),
+      field('개수', 'packCount', { big: true, inputmode: 'numeric', num: true, placeholder: '10', hint: '통/박스 수', oninput: updateTotal, enter: function () { submit(false); } })));
+    if (packOptions.length > 1 || (packOptions.length === 1 && packOptions[0] !== m.packUnit)) {
+      var pc = chipRow(packOptions, function (o) { m.packUnit = o; qs('#f-packUnit').value = o; updateTotal(); });
+      pc.style.marginTop = '-4px'; b.appendChild(pc);
+    }
+    b.appendChild(totalLine);
+    if (m.packRaw || p.packRaw) b.appendChild(h('div', { class: 'muted', style: 'font-size:12px;margin:-4px 0 8px' }, '식약처 포장단위: ' + (m.packRaw || p.packRaw)));
+
+    var det = h('details', { class: 'more', open: !!(m.donor || m.donation || m.part || m.memo || m.photo || pre) },
+      h('summary', null, '더 입력 (기부회사 · 진료 파트 · 메모 · 사진)'),
+      h('div', { class: 'grid-2' }, field('기부회사', 'donor', { placeholder: '예: 서울제약' }), field('기부금', 'donation', { placeholder: '예: 36000', inputmode: 'numeric' })),
+      field('진료 파트', 'part', { placeholder: '예: 내과' }),
+      field('총 개수 직접 입력', 'total', { inputmode: 'numeric', num: true, hint: '비우면 포장단위×개수로 자동 계산', oninput: function (e) { totalOverride = e.target.value !== ''; if (!totalOverride) { m.total = null; } updateTotal(); } }),
+      field('메모', 'memo', { textarea: true, placeholder: '예: 박스 상태, 보관 위치' }),
+      photoField());
+    b.appendChild(det);
+    setTimeout(updateTotal, 0);
+    if (!edit) setTimeout(function () { var i = qs(m.expiry ? '#f-packCount' : '#f-expiry'); if (i && !showAuto) i.focus(); }, 60);
+  }
+  var photoRedraw = null;
+  if (pre && pre.photoPromise) pre.photoPromise.then(function (id) { if (id && !m.photo) { m.photo = id; if (photoRedraw) photoRedraw(); } });
+  function photoField() {
+    var wrap = h('div', { class: 'field' }, h('label', null, '사진'));
+    var strip = h('div', { class: 'photo-strip' });
+    photoRedraw = function () { draw(); };
+    function draw() {
+      strip.innerHTML = '';
+      if (m.photo) strip.appendChild(h('div', { class: 'ph' }, h('img', { src: photoUrl(m.photo), alt: '약 사진' }), h('button', { type: 'button', class: 'del', 'aria-label': '사진 삭제', onclick: function () { var old = m.photo; m.photo = ''; if (!edit || old !== orig.photo) deletePhoto(old); draw(); } }, '✕')));
+      else strip.appendChild(h('button', { type: 'button', class: 'add', onclick: function () { capturePhoto(function (id) { m.photo = id; draw(); }); } }, h('span', null, '📷'), '촬영'));
+    }
+    draw(); wrap.appendChild(strip); return wrap;
+  }
+  function validate() {
+    if (!m.name || !m.name.trim()) { toast('의약품명을 입력하세요'); showAuto = true; renderBody(ctx); setTimeout(function () { qs('#f-name').focus(); }, 50); return false; }
+    var r = parseExpiry(m.expiry);
+    if (!r.ok) { toast('유효기간 형식을 확인하세요'); qs('#f-expiry').focus(); return false; }
+    m.expiry = r.value;
+    return true;
+  }
+  function learnCategory() {
+    if (!m.cat1 && !m.cat2) return;
+    if (m.kpic) DB.settings.catMap[catMapKey(m.kpic)] = { cat1: m.cat1, cat2: m.cat2 };
+    if (m.cls) DB.settings.catMap['cls|' + m.cls] = { cat1: m.cat1, cat2: m.cat2 };
+  }
+  function submit(keepOpen) {
+    if (!validate()) return;
+    m.name = m.name.trim();
+    if (!totalOverride) m.total = (m.packUnit != null && m.packCount != null) ? Number(m.packUnit) * Number(m.packCount) : null;
+    learnCategory();
+    if (edit) {
+      putDrug(m); ctx.close(); toast(m.name + ' 저장됨'); render(); refreshGroupSheet();
+      return;
+    }
+    var rec = JSON.parse(JSON.stringify(stripLocal(m))); rec.id = uid(); rec.createdAt = nowIso(); rec.source = p.code ? 'health.kr' : 'manual';
+    putDrug(rec);
+    var label = rec.name + (rec.strength ? ' ' + rec.strength : '') + ' · ' + (rec.expiry || '기한없음') + ' · ' + fmtNum(drugTotal(rec)) + '개 추가됨';
+    toast(label, { label: '실행취소', fn: function () { removeDrug(rec.id); render(); refreshGroupSheet(); } });
+    if (keepOpen) {
+      existing = liveDrugs().filter(function (d) { return d.code && d.code === m.code || groupKey(d) === groupKey(m); });
+      m.expiry = ''; m.packCount = null; m.total = null; totalOverride = false; m.photo = '';
+      renderBody(ctx); setTimeout(function () { qs('#f-expiry').focus(); }, 50);
+    } else {
+      ctx.close();
+      if (groupSheetCtx && sheetStack.indexOf(groupSheetCtx) >= 0) { render(); refreshGroupSheet(); }
+      else { UI.query = ''; UI.results = null; render(); }
+    }
+  }
+  ctx = openSheet({
+    title: edit ? '로트 수정' : (p.code ? '새 로트 추가' : '약 추가'),
+    full: true,
+    render: renderBody,
+    footer: function (c) {
+      if (edit) {
+        c.foot.appendChild(h('button', { class: 'btn danger', style: 'flex:0 0 auto', onclick: function () {
+          confirmSheet('로트 삭제', m.name + ' (' + (m.expiry || '기한없음') + ') 로트를 삭제할까요?', '삭제', true).then(function (ok) {
+            if (!ok) return; removeDrug(m.id); if (orig.photo && !syncConfigured()) deletePhoto(orig.photo); c.close(); toast('삭제됨'); render(); refreshGroupSheet();
+          });
+        } }, '삭제'));
+        c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () { submit(false); } }, '저장'));
+      } else {
+        c.foot.appendChild(h('button', { class: 'btn', onclick: function () { submit(true); } }, '추가 후 계속'));
+        c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () { submit(false); } }, '추가'));
+      }
+    }
+  });
+}
+
+function capturePhoto(cb) {
+  pickImages('camera').then(function (files) {
+    if (!files.length) return;
+    toast('사진 저장 중…');
+    return resizeImage(files[0], 1600, 0.85).then(function (r) { return uploadPhoto(r.blob); }).then(function (id) { hideToast(); cb(id); });
+  }).catch(function (e) { toast('사진 처리 실패: ' + (e && e.message || e)); });
+}
+
+/* ---------- group (one drug, many lots) ---------- */
+function openGroupSheet(key) {
+  var ctx = openSheet({
+    title: '',
+    full: true,
+    render: function (c) { drawGroup(c, key); },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        var g = inventoryGroups().filter(function (x) { return x.key === key; })[0]; if (!g) return;
+        var l = g.lots[0];
+        openAddSheet({ cat1: l.cat1, cat2: l.cat2, ingredient: l.ingredient, name: l.name, strength: l.strength, form: l.form, formRaw: l.formRaw, packUnit: l.packUnit, donor: l.donor, part: l.part, code: l.code, kfda: l.kfda, company: l.company, kpic: l.kpic, cls: l.cls, packOptions: uniq(g.lots.map(function (x) { return x.packUnit; })) }, { mode: 'add' });
+      } }, '＋ 로트 추가 (새 유효기간)'));
+    }
+  });
+  ctx.refresh = function () { drawGroup(ctx, key); };
+  ctx.onClose = function () { if (groupSheetCtx === ctx) groupSheetCtx = null; };
+  groupSheetCtx = ctx;
+}
+var groupSheetCtx = null;
+function refreshGroupSheet() { if (groupSheetCtx && sheetStack.indexOf(groupSheetCtx) >= 0) groupSheetCtx.refresh(); }
+function drawGroup(c, key) {
+  var g = inventoryGroups().filter(function (x) { return x.key === key; })[0];
+  if (!g) { c.close(); return; }
+  c.title(g.name + (g.strength ? ' ' + g.strength : ''));
+  var b = c.body; b.innerHTML = '';
+  b.appendChild(h('dl', { class: 'kv' },
+    h('dt', null, '분류'), h('dd', null, [g.cat1, g.cat2].filter(Boolean).join(' › ') || '-'),
+    h('dt', null, '성분명'), h('dd', null, g.ingredient || '-'),
+    h('dt', null, '제형'), h('dd', null, g.form || '-'),
+    h('dt', null, '총 개수'), h('dd', { class: 'num' }, fmtNum(g.total) + ' (' + g.lots.length + '개 로트)')));
+  if (g.code) b.appendChild(h('button', { class: 'btn sm', onclick: function () { openExternalLink('https://www.health.kr/drug/' + g.code); } }, '약학정보원에서 보기 ↗'));
+  b.appendChild(h('div', { class: 'section-title', style: 'padding-left:0' }, '로트 (유효기간별)'));
+  var list = h('div', { class: 'list', style: 'padding:0' });
+  g.lots.forEach(function (l) {
+    list.appendChild(h('button', { class: 'card', onclick: function () { openAddSheet(null, { mode: 'edit', id: l.id }); } },
+      h('div', { class: 'lot-row' },
+        l.photo ? h('img', { class: 'photo-thumb', src: photoUrl(l.photo), alt: '' }) : stamp(l.expiry || ''),
+        h('div', null, l.photo ? stamp(l.expiry || '') : null, h('div', { class: 'lot-meta' }, [l.donor, l.part, l.memo].filter(Boolean).join(' · ') || (l.source === 'excel' ? '엑셀에서 가져옴' : ''))),
+        h('div', { class: 'lot-q num' }, fmtNum(drugTotal(l)), h('small', null, l.packUnit && l.packCount ? fmtNum(l.packUnit) + ' × ' + fmtNum(l.packCount) : '')))));
+  });
+  b.appendChild(list);
+}
+/* ---------- seed import ---------- */
+function importSeed() {
+  fetch('data/seed.json').then(function (r) { return r.json(); }).then(function (rows) {
+    var existingIds = {}; DB.drugs.forEach(function (d) { existingIds[d.id] = 1; });
+    var n = 0;
+    rows.forEach(function (r) { if (existingIds[r.id]) return; r.createdAt = nowIso(); touch(r); DB.drugs.push(r); n++; });
+    save(); render(); toast('엑셀 원본에서 ' + n + '건을 가져왔어요');
+  }).catch(function () { toast('원본 데이터를 읽지 못했어요'); });
+}
+
+/* bags.js — 짐분배: bags with number, owner, photos, contents */
+'use strict';
+
+var PARTS = ['의료', '다음세대', '이미용', '치과', '식품', '기타'];
+var UIB = { query: '' };
+
+function bagNo(b) { var n = Number(String(b.no || '').replace(/[^\d]/g, '')); return isNaN(n) ? 0 : n; }
+function nextBagNo() {
+  var max = 0; liveBags().forEach(function (b) { var n = bagNo(b); if (n > max) max = n; });
+  return max ? String(max + 1) : '1';
+}
+function sortedBags() {
+  return liveBags().sort(function (a, b) { return bagNo(a) - bagNo(b) || String(a.no).localeCompare(String(b.no)); });
+}
+
+function renderBags(root) {
+  root.innerHTML = '';
+  var bagsLive = liveBags();
+  var items = bagsLive.reduce(function (s, b) { return s + (b.items || []).length; }, 0);
+  root.appendChild(h('div', { class: 'topbar' },
+    h('div', { class: 'topbar-row' },
+      h('div', { class: 'searchbox' },
+        h('span', { style: 'font-size:18px;color:var(--ink-3)' }, '🔍'),
+        h('input', { type: 'search', placeholder: '번호 · 담당자 · 물품으로 찾기', value: UIB.query, autocomplete: 'off', oninput: function (e) { UIB.query = e.target.value; renderBagBody(); } }),
+        UIB.query ? h('button', { class: 'clear', onclick: function () { UIB.query = ''; render(); } }, '✕') : null),
+      h('button', { class: 'iconbtn amber', title: '사진 찍고 가방 등록', 'aria-label': '사진 찍고 가방 등록', onclick: function () { newBagFromCamera(); } }, '📷'),
+      h('button', { class: 'iconbtn', title: '가방 추가', 'aria-label': '가방 추가', onclick: function () { openBagSheet(null, {}); } }, '＋')),
+    h('div', { style: 'display:flex;gap:10px;align-items:center;padding:8px 2px 0;color:var(--ink-2);font-size:13px;font-weight:600' },
+      h('span', null, '가방 ' + bagsLive.length + '개'), h('span', null, '품목 ' + items + '개'), h('span', { style: 'flex:1' }), syncPill())));
+  root.appendChild(h('div', { id: 'bag-body' }));
+  renderBagBody();
+}
+function renderBagBody() {
+  var body = qs('#bag-body'); if (!body) return;
+  body.innerHTML = '';
+  var q = UIB.query.trim().replace(/\s+/g, '').toLowerCase();
+  var bags = sortedBags().filter(function (b) {
+    if (!q) return true;
+    var hay = [b.no, b.owner, b.ownerEn, b.part, b.summary, b.memo].concat((b.items || []).map(function (i) { return i.name; })).join(' ').replace(/\s+/g, '').toLowerCase();
+    return hay.indexOf(q) >= 0;
+  });
+  if (!liveBags().length) {
+    body.appendChild(h('div', { class: 'empty' },
+      h('h2', null, '아직 등록된 가방이 없어요'),
+      h('p', null, '📷 를 눌러 가방이나 박스를 찍으면 번호가 자동으로 매겨지고, 사진과 내용물을 함께 기록할 수 있어요.'),
+      h('div', { class: 'actions' },
+        h('button', { class: 'btn amber', onclick: function () { newBagFromCamera(); } }, '📷 사진 찍고 등록'),
+        h('button', { class: 'btn', onclick: function () { openBagSheet(null, {}); } }, '사진 없이 등록'))));
+    return;
+  }
+  if (!bags.length) { body.appendChild(h('div', { class: 'empty' }, h('h2', null, '검색 결과가 없어요'))); return; }
+  var list = h('div', { class: 'list' });
+  bags.forEach(function (b) { list.appendChild(bagCard(b)); });
+  body.appendChild(list);
+}
+function bagCard(b) {
+  var items = (b.items || []);
+  var li = items.slice(0, 5).map(function (i) { return h('li', null, h('b', null, i.name), i.qty != null ? ' ' + fmtNum(i.qty) : '', i.unit ? ' ' + i.unit : ''); });
+  if (items.length > 5) li.push(h('li', { class: 'more' }, '외 ' + (items.length - 5) + '개'));
+  var photo = b.photos && b.photos.length ? h('img', { class: 'bag-photo', src: photoUrl(b.photos[0]), alt: '' }) : h('div', { class: 'bag-photo none' }, '🧳');
+  return h('button', { class: 'card bag-card', onclick: function () { openBagSheet(b.id, {}); } },
+    photo,
+    h('div', { class: 'bag-main' },
+      h('div', { class: 'bag-top' }, h('span', { class: 'ltag' }, b.no || '-'), h('span', { class: 'bag-owner' }, b.owner || '담당자 없음')),
+      h('div', { class: 'bag-part' }, [b.part, b.summary].filter(Boolean).join(' · ')),
+      items.length ? h('ul', { class: 'bag-items' }, li) : h('div', { class: 'muted', style: 'font-size:13px;margin-top:6px' }, '내용물 미입력')));
+}
+
+function newBagFromCamera() {
+  pickImages('camera').then(function (files) {
+    if (!files.length) return;
+    toast('사진 저장 중…');
+    return resizeImage(files[0], 1600, 0.85).then(function (r) { return uploadPhoto(r.blob); }).then(function (id) { hideToast(); openBagSheet(null, { photos: [id] }); });
+  }).catch(function (e) { toast('사진 처리 실패: ' + (e && e.message || e)); });
+}
+
+// "라피도TA 106" → {name, qty, unit}; "로스파정 30Tx10EA" → unit text
+function parseItemLine(s) {
+  s = String(s || '').trim().replace(/\s+/g, ' ');
+  if (!s) return null;
+  var t = s.split(' ');
+  var last = t[t.length - 1];
+  var m;
+  if (t.length >= 2 && /^\d[\d,]*$/.test(last)) return { name: t.slice(0, -1).join(' '), qty: toNum(last), unit: '' };
+  if (t.length >= 3 && /^\d[\d,]*$/.test(t[t.length - 2]) && /^[가-힣a-zA-Z]+$/.test(last)) return { name: t.slice(0, -2).join(' '), qty: toNum(t[t.length - 2]), unit: last };
+  if (t.length >= 2 && (m = last.match(/^(\d[\d,]*)([가-힣a-zA-Z]+)$/))) return { name: t.slice(0, -1).join(' '), qty: toNum(m[1]), unit: m[2] };
+  if (t.length >= 2 && /\d/.test(last) && /[xX×TCEA개포곽]/.test(last)) return { name: t.slice(0, -1).join(' '), qty: null, unit: last };
+  return { name: s, qty: null, unit: '' };
+}
+
+function openBagSheet(id, opts) {
+  var edit = !!id;
+  var orig = edit ? DB.bags.filter(function (b) { return b.id === id; })[0] : null;
+  if (edit && !orig) return;
+  var m = edit ? JSON.parse(JSON.stringify(orig)) : { no: nextBagNo(), owner: '', ownerEn: '', part: '', summary: '', items: [], photos: (opts.photos || []).slice(), memo: '' };
+  m.items = m.items || []; m.photos = m.photos || [];
+  var addedPhotos = (opts.photos || []).slice();
+  var ctx;
+  function fld(label, key, attrs) {
+    attrs = attrs || {};
+    var input = h(attrs.textarea ? 'textarea' : 'input', { value: m[key] || '', placeholder: attrs.placeholder || '', inputmode: attrs.inputmode, class: attrs.big ? 'big' : '', id: 'b-' + key, oninput: function (e) { m[key] = e.target.value; } });
+    if (attrs.textarea) input.value = m[key] || '';
+    return h('div', { class: 'field amber' }, h('label', { for: 'b-' + key }, label, attrs.hint ? h('span', { class: 'hint' }, attrs.hint) : null), input, attrs.extra || null);
+  }
+  function partChips() {
+    var sel = (m.part || '').split(/[,\s/]+/).filter(Boolean);
+    return h('div', { class: 'chips', style: 'margin-top:6px' }, PARTS.map(function (p) {
+      var on = sel.indexOf(p) >= 0;
+      return h('button', { type: 'button', class: 'chip sm' + (on ? ' on' : ''), onclick: function () {
+        var cur = (m.part || '').split(/[,\s/]+/).filter(Boolean);
+        var i = cur.indexOf(p); if (i >= 0) cur.splice(i, 1); else cur.push(p);
+        m.part = cur.join(', '); qs('#b-part').value = m.part; var pc = qs('#part-chips'); var np = partChips(); np.id = 'part-chips'; pc.replaceWith(np);
+      } }, p);
+    }));
+  }
+  function photoStrip() {
+    var strip = h('div', { class: 'photo-strip', id: 'b-photos' });
+    m.photos.forEach(function (pid, idx) {
+      strip.appendChild(h('div', { class: 'ph' },
+        h('img', { src: photoUrl(pid), alt: '가방 사진 ' + (idx + 1), onclick: function () { viewPhoto(pid); } }),
+        h('button', { type: 'button', class: 'del', 'aria-label': '사진 삭제', onclick: function () { m.photos.splice(idx, 1); if (!edit || orig.photos.indexOf(pid) < 0) deletePhoto(pid); refreshPhotos(); } }, '✕')));
+    });
+    strip.appendChild(h('button', { type: 'button', class: 'add', onclick: function () { addPhotos('camera'); } }, h('span', null, '📷'), '촬영'));
+    strip.appendChild(h('button', { type: 'button', class: 'add', onclick: function () { addPhotos('gallery'); } }, h('span', null, '🖼'), '앨범'));
+    return strip;
+  }
+  function refreshPhotos() { var old = qs('#b-photos'); if (old) old.replaceWith(photoStrip()); }
+  function addPhotos(mode) {
+    pickImages(mode, true).then(function (files) {
+      if (!files.length) return;
+      toast('사진 ' + files.length + '장 저장 중…');
+      var chain = Promise.resolve();
+      files.forEach(function (f) { chain = chain.then(function () { return resizeImage(f, 1600, 0.85).then(function (r) { return uploadPhoto(r.blob); }).then(function (pid) { m.photos.push(pid); addedPhotos.push(pid); }); }); });
+      return chain.then(function () { hideToast(); refreshPhotos(); });
+    }).catch(function (e) { toast('사진 처리 실패: ' + (e && e.message || e)); });
+  }
+  function itemsEditor() {
+    var wrap = h('div', { id: 'b-items' });
+    var list = h('div', { class: 'items-edit' });
+    m.items.forEach(function (it, idx) {
+      list.appendChild(h('div', { class: 'item-line' },
+        h('input', { value: it.name || '', placeholder: '품명', oninput: function (e) { it.name = e.target.value; } }),
+        h('input', { value: it.qty == null ? '' : it.qty, placeholder: '수량', inputmode: 'numeric', oninput: function (e) { it.qty = toNum(e.target.value); } }),
+        h('input', { value: it.unit || '', placeholder: '단위', oninput: function (e) { it.unit = e.target.value; } }),
+        h('button', { type: 'button', class: 'rm', 'aria-label': '삭제', onclick: function () { m.items.splice(idx, 1); refreshItems(); } }, '✕')));
+    });
+    wrap.appendChild(list);
+    var qa = h('input', { placeholder: '빠른 추가: 품명 수량 (예: 오메가3 40)', id: 'b-quick' });
+    function addQuick() { var it = parseItemLine(qa.value); if (!it) return; it.id = uid(); m.items.push(it); qa.value = ''; refreshItems(); setTimeout(function () { var i = qs('#b-quick'); if (i) i.focus(); }, 0); }
+    qa.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addQuick(); } });
+    wrap.appendChild(h('div', { class: 'quick-add' }, qa, h('button', { type: 'button', class: 'btn amber', style: 'min-height:46px', onclick: addQuick }, '추가')));
+    wrap.appendChild(h('div', { style: 'margin-top:8px' }, h('button', { type: 'button', class: 'btn sm', onclick: function () { pickFromInventory(function (g, qty, unit) { m.items.push({ id: uid(), name: g.name + (g.strength ? ' ' + g.strength : ''), qty: qty, unit: unit, drugKey: g.key }); refreshItems(); }); } }, '💊 약 재고에서 선택')));
+    return wrap;
+  }
+  function refreshItems() { var old = qs('#b-items'); if (old) old.replaceWith(itemsEditor()); }
+
+  ctx = openSheet({
+    title: edit ? '가방 ' + (m.no || '') : '새 가방',
+    full: true,
+    render: function (c) {
+      var b = c.body;
+      b.appendChild(h('div', { class: 'field amber' }, h('label', null, '사진'), photoStrip()));
+      b.appendChild(h('div', { class: 'grid-2' },
+        fld('번호', 'no', { big: true, inputmode: 'numeric', placeholder: '244111' }),
+        fld('담당자', 'owner', { placeholder: '이름' })));
+      b.appendChild(fld('담당자 영문', 'ownerEn', { placeholder: 'KIM TAEYEON (여권 표기, 선택)' }));
+      var pc = partChips(); pc.id = 'part-chips';
+      b.appendChild(fld('구분(파트)', 'part', { placeholder: '의료, 다음세대 …', extra: pc }));
+      b.appendChild(fld('대상 물품', 'summary', { placeholder: '예: 약품, 진료차트, 미용의자' }));
+      b.appendChild(h('div', { class: 'field amber' }, h('label', null, '내용물', h('span', { class: 'hint' }, '품명 · 수량')), itemsEditor()));
+      b.appendChild(fld('메모', 'memo', { textarea: true, placeholder: '예: 깨지기 쉬움, 23kg' }));
+      if (!edit) setTimeout(function () { var i = qs('#b-owner'); if (i) i.focus(); }, 80);
+    },
+    footer: function (c) {
+      if (edit) c.foot.appendChild(h('button', { class: 'btn danger', style: 'flex:0 0 auto', onclick: function () {
+        confirmSheet('가방 삭제', '가방 ' + m.no + ' 기록과 사진을 삭제할까요?', '삭제', true).then(function (ok) {
+          if (!ok) return; removeBag(m.id); if (!syncConfigured()) (orig.photos || []).forEach(deletePhoto); c.close(); toast('삭제됨'); render();
+        });
+      } }, '삭제'));
+      c.foot.appendChild(h('button', { class: 'btn amber', onclick: function () {
+        m.items = m.items.filter(function (i) { return i.name && i.name.trim(); });
+        if (!String(m.no || '').trim()) { toast('번호를 입력하세요'); qs('#b-no').focus(); return; }
+        if (!edit) { m.id = uid(); m.createdAt = nowIso(); }
+        putBag(m);
+        addedPhotos = []; c.close(); toast('가방 ' + m.no + ' 저장됨'); render();
+      } }, edit ? '저장' : '가방 저장'));
+    },
+    onClose: function () { if (!edit) addedPhotos.forEach(deletePhoto); }
+  });
+}
+function viewPhoto(pid) {
+  openSheet({ title: '사진', full: true, render: function (c) { c.body.appendChild(h('div', { class: 'bag-detail-photos' }, h('img', { src: photoUrl(pid), alt: '' }))); } });
+}
+function pickFromInventory(cb) {
+  var q = '';
+  var c = openSheet({
+    title: '약 재고에서 선택', full: true,
+    render: function (c) {
+      var inp = h('input', { placeholder: '약 이름으로 찾기', style: 'width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;margin:4px 0 8px', oninput: function (e) { q = e.target.value; draw(); } });
+      var list = h('div', { class: 'list', style: 'padding:0' });
+      function draw() {
+        list.innerHTML = '';
+        inventoryGroups(function (d) { return !q || matchesQuery(d, q); }).slice(0, 40).forEach(function (g) {
+          list.appendChild(h('button', { class: 'card', onclick: function () {
+            var s = prompt(g.name + ' 수량 (예: 10 또는 30Tx10EA)', '');
+            if (s === null) return;
+            var p = parseItemLine(g.name + ' ' + s);
+            cb(g, p ? p.qty : null, p ? p.unit : s); c.close();
+          } }, h('div', { class: 'result' }, h('div', null, h('div', { class: 'r-name' }, g.name, g.strength ? ' ' + g.strength : ''), h('div', { class: 'r-sub' }, '재고 ' + fmtNum(g.total) + ' · ' + g.lots.length + '로트')), h('div', { class: 'r-side' }, g.form || ''))));
+        });
+      }
+      c.body.appendChild(inp); c.body.appendChild(list); draw();
+    }
+  });
+}
+
+/* more.js — team sharing (Google Sheet), export, backup, settings, diagnostics */
+'use strict';
+
+function renderMore(root) {
+  root.innerHTML = '';
+  var drugs = liveDrugs(), bags = liveBags();
+  var lots = drugs.length, groups = inventoryGroups().length;
+  var soon = drugs.filter(function (d) { var c = expiryClass(d.expiry); return c === 'soon' || c === 'urgent' || c === 'expired'; }).length;
+  root.appendChild(h('div', { class: 'topbar' }, h('div', { class: 'topbar-row' }, h('h1', null, '더보기'), h('span', { class: 'spacer' }), syncPill())));
+  root.appendChild(h('div', { class: 'stats' },
+    h('div', { class: 'stat' }, h('b', { class: 'num' }, groups), h('span', null, '약 종류')),
+    h('div', { class: 'stat' }, h('b', { class: 'num' }, lots), h('span', null, '로트')),
+    h('div', { class: 'stat' }, h('b', { class: 'num' }, bags.length), h('span', null, '가방'))));
+  if (soon) root.appendChild(h('div', { class: 'notice', style: 'margin-top:8px' }, '유효기간 1년 이내(또는 만료) 로트 ' + soon + '건'));
+  var menu = h('div', { class: 'menu' });
+  function item(ic, t, d, fn) { return h('button', { class: 'card', onclick: fn }, h('span', { class: 'm-ic' }, ic), h('span', { style: 'min-width:0' }, h('div', { class: 'm-t' }, t), h('div', { class: 'm-d' }, d))); }
+
+  // ----- team sharing -----
+  menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '팀 공유 (Google 시트)'));
+  var sy = DB.settings.sync;
+  if (MODE === 'gas') {
+    menu.appendChild(item('☁️', '이 화면은 공유 시트와 직접 연결되어 있어요', (sy && sy.name ? sy.name + ' · ' : '') + '변경 사항은 모두에게 바로 반영됩니다', function () { syncNow({ manual: true }); }));
+    if (sy && sy.sheetUrl) menu.appendChild(item('📄', 'Google 시트 열기', '전체 표를 보거나 엑셀로 내려받기 (파일 → 다운로드)', function () { openExternalLink(sy.sheetUrl); }));
+  } else if (syncConfigured()) {
+    menu.appendChild(item('☁️', (sy.name || '공유 시트') + ' 에 연결됨', (SYNC.lastOk ? '마지막 동기화 ' + fmtTime(SYNC.lastOk) : '아직 동기화 전') + (SYNC.status === 'error' ? ' · 실패: ' + SYNC.message : '') + ' · 탭하여 지금 동기화', function () { syncNow({ manual: true }); }));
+    if (sy.sheetUrl) menu.appendChild(item('📄', 'Google 시트 열기', '팀원에게 이 시트 링크를 보내면 누구나 바로 볼 수 있어요', function () { openExternalLink(sy.sheetUrl); }));
+    menu.appendChild(item('🔗', '팀 초대 링크 보기', '같은 주소를 넣은 모든 앱이 같은 목록을 공유합니다 · 설치 없이 쓰는 웹 버전 주소이기도 해요', function () { openShareInfo(); }));
+    menu.appendChild(item('⛔', '공유 연결 끊기', '이 기기의 데이터는 그대로 두고 연결만 해제', function () {
+      confirmSheet('공유 연결 끊기', '이 기기는 더 이상 팀 시트와 동기화하지 않아요. 기기 안의 목록은 유지됩니다.', '끊기', true).then(function (ok) { if (!ok) return; DB.settings.sync = null; DB.drugs = liveDrugs(); DB.bags = liveBags(); save(); setSyncStatus('off'); startPeriodicSync(); syncTeamToLocation(); render(); toast('연결을 끊었어요'); });
+    }));
+  } else {
+    menu.appendChild(item('☁️', '팀 공유 연결하기', 'Google 시트 하나를 팀 저장소로 쓰면 모두가 같은 목록을 보고 고칠 수 있어요', function () { openSyncSetup(); }));
+  }
+
+  // ----- export -----
+  if (NATIVE) {
+    menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '엑셀로 내보내기'));
+    menu.appendChild(item('📗', '의약품 리스트 (xlsx)', '원본 엑셀과 같은 열 순서 · 유효기간순 정렬 · 요약 시트 포함', function () { exportData('drugs'); }));
+    menu.appendChild(item('📙', '수하물 리스트 (xlsx)', '가방 번호 · 담당자 · 내용물 · 사진 포함', function () { exportData('bags'); }));
+  }
+  // ----- data -----
+  menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '데이터'));
+  if (MODE !== 'gas') {
+    menu.appendChild(item('💾', '백업 파일 만들기 (json)', '사진 제외 전체 데이터 · 카톡/드라이브로 보관', function () { exportData('backup'); }));
+    menu.appendChild(item('📂', '백업 파일 불러오기', '기존 데이터에 합치기 (같은 항목은 건너뜀)', function () { importBackup(); }));
+  }
+  if (!NATIVE && syncConfigured() && DB.settings.sync.sheetUrl && MODE !== 'gas') menu.appendChild(item('📄', 'Google 시트에서 엑셀 받기', '시트 → 파일 → 다운로드 → Microsoft Excel', function () { openExternalLink(DB.settings.sync.sheetUrl); }));
+  if (MODE !== 'gas') menu.appendChild(item('📋', '엑셀 원본 리스트 불러오기', '물품리스트.xlsx 원본 시트 164건 (이미 있으면 건너뜀)', function () { importSeed(); }));
+  else if (!liveDrugs().length && !liveBags().length) menu.appendChild(h('div', { class: 'notice' }, '아직 공유된 데이터가 없어요. 앱에서 "엑셀 원본 리스트 불러오기"를 하거나 여기서 약을 추가하면 모두에게 보입니다.'));
+  // ----- settings -----
+  menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '설정'));
+  var lang = DB.settings.ocrLang || 'kor';
+  var engine = (APP_INFO && APP_INFO.ocr) || 'tesseract';
+  menu.appendChild(item('🔤', '사진 글자 인식', engine === 'mlkit' ? 'Google ML Kit (한글, 기기 내 처리) 사용 중' : (lang === 'kor+eng' ? 'Tesseract · 한국어 + 영어 (느리지만 영문명도 인식)' : 'Tesseract · 한국어만 (빠름) — 탭하여 영어 추가'), function () {
+    if (engine === 'mlkit') { toast('ML Kit 엔진은 별도 설정이 없어요'); return; }
+    DB.settings.ocrLang = lang === 'kor' ? 'kor+eng' : 'kor'; save(); render();
+  }));
+  menu.appendChild(item('🧠', '분류 자동학습 초기화', Object.keys(DB.settings.catMap || {}).length + '개 학습됨 — 약학정보원 분류를 내 대분류/소분류로 바꾼 기록', function () {
+    confirmSheet('초기화', '학습된 분류 매핑을 모두 지울까요?', '지우기', true).then(function (ok) { if (ok) { DB.settings.catMap = {}; save(); render(); toast('초기화됨'); } });
+  }));
+  menu.appendChild(item('🩺', '진단 정보', '문제가 생겼을 때 이 화면을 캡처해서 보내주세요', function () { openDiagnostics(); }));
+  menu.appendChild(h('div', { class: 'danger-zone' },
+    item('🗑', syncConfigured() ? '이 기기의 데이터 지우기' : '모든 데이터 삭제', syncConfigured() ? '공유 시트의 데이터는 그대로 두고 이 기기만 비운 뒤 다시 내려받아요' : '약 · 가방 · 사진 전부 삭제 (복구 불가)', function () {
+      confirmSheet(syncConfigured() ? '기기 데이터 지우기' : '모든 데이터 삭제', syncConfigured() ? '이 기기의 목록과 사진을 지우고 공유 시트에서 다시 내려받습니다.' : '정말 전부 삭제할까요? 먼저 백업 파일을 만들어 두는 것을 권해요.', syncConfigured() ? '지우고 다시 받기' : '전부 삭제', true).then(function (ok) {
+        if (!ok) return;
+        DB.drugs.forEach(function (d) { if (d.photo) deletePhoto(d.photo); });
+        DB.bags.forEach(function (b) { (b.photos || []).forEach(deletePhoto); });
+        DB.drugs = []; DB.bags = []; DB.photoLocal = {};
+        if (DB.settings.sync) DB.settings.sync.lastPull = 0;
+        save(); render(); toast('지웠어요');
+        if (syncConfigured()) syncNow({ manual: true });
+      });
+    })));
+  menu.appendChild(h('div', { class: 'muted', style: 'font-size:12px;padding:12px 4px' }, '선교약품 v' + ((APP_INFO && APP_INFO.version) || '1.1') + ' · 약 정보 출처: 약학정보원(health.kr) / 식품의약품안전처' + (MODE === 'web' ? ' · 웹 미리보기 모드' : MODE === 'gas' ? ' · 웹 버전' : '')));
+  root.appendChild(menu);
+}
+
+/* ---------- team sharing setup ---------- */
+function openSyncSetup() {
+  var url = '';
+  var ctx = openSheet({
+    title: '팀 공유 연결', full: true,
+    render: function (c) {
+      var b = c.body;
+      b.appendChild(h('p', { style: 'margin:4px 0 10px;color:var(--ink-2)' }, '팀 중 한 명이 Google 시트를 만들고 "웹 앱 주소"를 받아서 단톡방에 올리면, 각자 아래에 붙여넣기만 하면 돼요. 같은 주소를 넣은 모든 앱이 하나의 목록을 공유합니다.'));
+      b.appendChild(h('div', { class: 'field' }, h('label', { for: 'sync-url' }, '웹 앱 주소 (https://script.google.com/macros/s/…/exec)'),
+        h('input', { id: 'sync-url', placeholder: 'https://script.google.com/macros/s/AKfy…/exec', inputmode: 'url', autocapitalize: 'off', autocomplete: 'off', oninput: function (e) { url = e.target.value.trim(); } }),
+        h('div', { class: 'help', id: 'sync-help' })));
+      b.appendChild(h('details', { class: 'more' }, h('summary', null, '주소를 만드는 방법 (팀 대표 1명, 약 5분)'),
+        h('ol', { style: 'padding-left:20px;color:var(--ink-2);font-size:14px;line-height:1.6' },
+          h('li', null, '컴퓨터에서 Google 스프레드시트 새 문서를 만들고 이름을 정합니다 (예: 필리핀선교 약품).'),
+          h('li', null, '메뉴 확장 프로그램 → Apps Script 를 엽니다.'),
+          h('li', null, '기본 코드를 지우고, 전달받은 Code.gs 내용을 붙여넣습니다. 왼쪽 + 로 HTML 파일 index 를 추가하고 index.html 내용을 붙여넣습니다. 저장(Ctrl+S).'),
+          h('li', null, '오른쪽 위 배포 → 새 배포 → 유형 선택(톱니) 웹 앱 → 실행 계정: 나, 액세스 권한: 모든 사용자 → 배포. 권한 요청이 나오면 허용(고급 → 프로젝트로 이동 → 허용).'),
+          h('li', null, '나오는 웹 앱 URL(…/exec)을 복사해서 팀에 공유하고, 여기 붙여넣으세요. 이 주소를 브라우저로 열면 설치 없이 쓰는 웹 버전이 열립니다.'))));
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        var help = qs('#sync-help');
+        if (!validTeamUrl(url)) { help.textContent = '주소는 https://script.google.com/macros/s/ 로 시작하고 /exec 로 끝나야 해요'; help.className = 'help bad'; return; }
+        help.textContent = '연결 확인 중…'; help.className = 'help';
+        var prev = DB.settings.sync;
+        DB.settings.sync = { url: url, lastPull: 0 };
+        remoteCall('ping', {}).then(function (p) {
+          if (!p || !p.ok || !p.gas) throw new Error(p && p.error || '응답이 올바르지 않아요');
+          DB.settings.sync.name = p.name || ''; DB.settings.sync.sheetUrl = p.sheetUrl || '';
+          // records already on this device go up as new (sheet copies win when ids collide and are newer)
+          DB.drugs.forEach(function (r) { r._dirty = true; }); DB.bags.forEach(function (r) { r._dirty = true; });
+          save(); c.close(); render(); startPeriodicSync(); syncTeamToLocation();
+          toast('연결됨: ' + (p.name || '공유 시트') + ' — 첫 동기화 중…');
+          return syncNow({ manual: false }).then(function () { render(); });
+        }).catch(function (e) {
+          DB.settings.sync = prev;
+          help.textContent = '연결 실패: ' + (e && e.message || e) + ' — 배포 액세스 권한이 "모든 사용자"인지 확인하세요'; help.className = 'help bad';
+        });
+      } }, '연결'));
+    }
+  });
+  setTimeout(function () { var i = qs('#sync-url'); if (i) i.focus(); }, 80);
+}
+function openShareInfo() {
+  var sy = DB.settings.sync || {};
+  openSheet({
+    title: '팀 초대 링크',
+    render: function (c) {
+      c.body.appendChild(h('p', { style: 'color:var(--ink-2);margin:4px 0 10px' }, '팀원은 앱에서 더보기 → 팀 공유 연결하기에 이 주소를 붙여넣으면 됩니다. 앱이 없는 사람(아이폰 포함)은 이 주소를 브라우저로 열면 바로 쓸 수 있어요.'));
+      var webLink = WEB_BASE_URL && sy.url ? WEB_BASE_URL + '?team=' + encodeURIComponent(sy.url) : '';
+      var ta = h('textarea', { readonly: true, style: 'width:100%;min-height:90px;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;word-break:break-all' }, webLink || sy.url || '');
+      c.body.appendChild(h('div', { class: 'muted', style: 'font-size:12px;margin-bottom:4px' }, webLink ? '아이폰·안드로이드 공통 웹 링크 (열면 자동으로 팀에 연결됨)' : '웹 앱 주소'));
+      c.body.appendChild(ta);
+      c.body.appendChild(h('div', { class: 'btn-row', style: 'margin-top:10px' },
+        h('button', { class: 'btn', onclick: function () { ta.select(); try { document.execCommand('copy'); toast('복사됨'); } catch (e) { toast('길게 눌러 복사하세요'); } } }, '주소 복사'),
+        sy.sheetUrl ? h('button', { class: 'btn', onclick: function () { openExternalLink(sy.sheetUrl); } }, '시트 열기') : null));
+      if (webLink) c.body.appendChild(h('div', { class: 'notice', style: 'margin-top:12px' }, h('b', null, '아이폰 사용자'), ' — 이 링크를 Safari로 연 다음 공유 버튼(네모에 화살표) → "홈 화면에 추가"를 누르면 앱처럼 설치돼요. 안드로이드는 APK 앱을 쓰거나 같은 링크를 Chrome으로 열면 됩니다.'));
+      if (webLink) c.body.appendChild(h('details', { class: 'more' }, h('summary', null, '앱용 주소(Apps Script)만 보기'), h('div', { style: 'font-size:13px;word-break:break-all;color:var(--ink-2)' }, sy.url)));
+    }
+  });
+}
+function openDiagnostics() {
+  var info = [
+    ['모드', MODE + (NATIVE ? ' (앱)' : '')], ['앱 버전', (APP_INFO && APP_INFO.version) || '-'], ['OCR 엔진', (APP_INFO && APP_INFO.ocr) || 'tesseract'],
+    ['OCR 마지막 오류', window.OCR_LAST_ERROR || '없음'], ['WebAssembly', typeof WebAssembly !== 'undefined' ? '지원' : '미지원'], ['Web Worker', typeof Worker !== 'undefined' ? '지원' : '미지원'],
+    ['공유', syncConfigured() ? (SYNC.status + (SYNC.message ? ' · ' + SYNC.message : '') + (SYNC.lastOk ? ' · ' + fmtTime(SYNC.lastOk) : '')) : '미설정'],
+    ['데이터', liveDrugs().length + ' 로트 · ' + liveBags().length + ' 가방 · 미동기화 ' + DB.drugs.concat(DB.bags).filter(function (r) { return r._dirty; }).length + '건'],
+    ['브라우저', navigator.userAgent]
+  ];
+  openSheet({ title: '진단 정보', render: function (c) {
+    c.body.appendChild(h('dl', { class: 'kv' }, info.map(function (kv) { return [h('dt', null, kv[0]), h('dd', { style: 'word-break:break-all' }, kv[1])]; })));
+    var out = h('div', { class: 'notice', style: 'margin:8px 0;white-space:pre-wrap;word-break:break-all' }, '아래 버튼을 누르면 앱이 직접 그린 글자 이미지를 인식 엔진에 보내 결과를 보여줘요.');
+    c.body.appendChild(h('button', { class: 'btn', onclick: function () {
+      out.textContent = '엔진 테스트 중…';
+      var cv = document.createElement('canvas'); cv.width = 800; cv.height = 260; var g = cv.getContext('2d');
+      g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.fillStyle = '#111'; g.font = 'bold 110px sans-serif'; g.fillText('덱시딜시럽', 40, 130); g.font = '60px sans-serif'; g.fillText('500 mL  Dexidil', 40, 220);
+      var t0 = Date.now();
+      var run = ocrEngine() === 'mlkit' ? recognizeNative(cv, { x: 0, y: 0, w: 1, h: 1 }, function () { }) : recognizeTesseract(cv, { x: 0, y: 0, w: 1, h: 1 }, function (m) { out.textContent = m; });
+      run.then(function (items) { out.textContent = '성공 (' + (Date.now() - t0) + 'ms, 엔진 ' + ocrEngine() + ')\n' + items.map(function (i) { return i.text; }).join('\n'); })
+        .catch(function (e) { out.textContent = '실패 (' + (Date.now() - t0) + 'ms, 엔진 ' + ocrEngine() + '): ' + (e && e.message || e); });
+    } }, '글자 인식 엔진 테스트'));
+    c.body.appendChild(out);
+  } });
+}
+
+/* ---------- export ---------- */
+function sortedDrugsForExport() {
+  return liveDrugs().sort(function (a, b) {
+    return (a.cat1 || '힣').localeCompare(b.cat1 || '힣', 'ko') || (a.cat2 || '힣').localeCompare(b.cat2 || '힣', 'ko') || (a.ingredient || '힣').localeCompare(b.ingredient || '힣') || (a.name || '').localeCompare(b.name || '', 'ko') || (a.expiry || 'z').localeCompare(b.expiry || 'z');
+  });
+}
+function exportData(type) {
+  var stampD = new Date(); var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var ds = stampD.getFullYear() + pad(stampD.getMonth() + 1) + pad(stampD.getDate()) + '-' + pad(stampD.getHours()) + pad(stampD.getMinutes());
+  var payload, filename;
+  if (type === 'drugs') {
+    var rows = sortedDrugsForExport().map(function (d) {
+      return { cat1: d.cat1 || '', cat2: d.cat2 || '', ingredient: d.ingredient || '', name: d.name || '', total: drugTotal(d), strength: d.strength || '', packUnit: d.packUnit, packCount: d.packCount, form: d.form || '', expiry: d.expiry || '', donor: d.donor || '', donation: d.donation || '', part: d.part || '', memo: d.memo || '', photo: d.photo || '', createdAt: d.createdAt || '' };
+    });
+    var summary = inventoryGroups().map(function (g) { return { cat1: g.cat1 || '', cat2: g.cat2 || '', ingredient: g.ingredient || '', name: g.name, strength: g.strength || '', form: g.form || '', total: g.total, lots: g.lots.length, nearest: g.lots[0] ? g.lots[0].expiry || '' : '' }; })
+      .sort(function (a, b) { return (a.cat1 || '힣').localeCompare(b.cat1 || '힣', 'ko') || a.name.localeCompare(b.name, 'ko'); });
+    payload = { rows: rows, summary: summary }; filename = '의약품리스트_' + ds + '.xlsx';
+  } else if (type === 'bags') {
+    payload = { bags: sortedBags().map(function (b) { return { no: b.no, owner: b.owner || '', ownerEn: b.ownerEn || '', part: b.part || '', summary: b.summary || '', memo: b.memo || '', photos: (b.photos || []).map(function (p) { return p.slice(0, 2) === 'g:' ? (DB.photoLocal[p] || p) : p; }), items: (b.items || []).map(function (i) { return { name: i.name, qty: i.qty, unit: i.unit || '' }; }) }; }) };
+    filename = '수하물리스트_' + ds + '.xlsx';
+  } else {
+    payload = { db: DB }; filename = '선교약품_백업_' + ds + '.json';
+  }
+  if (!NATIVE) {
+    var blob = new Blob([JSON.stringify(type === 'backup' ? DB : payload, null, 1)], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename.replace(/\.xlsx$/, '.json'); a.click();
+    toast(type === 'backup' ? '백업 파일을 내려받았어요' : '엑셀 변환은 앱에서만 됩니다 — JSON으로 내려받았어요');
+    return;
+  }
+  toast('파일 만드는 중…');
+  apiJson('/api/export', { method: 'POST', body: JSON.stringify({ type: type, filename: filename, payload: payload }), headers: { 'Content-Type': 'application/json' } })
+    .then(function (j) { if (j.ok) toast((j.savedTo ? '다운로드 폴더에 저장됨: ' : '만들어짐: ') + filename); else toast('내보내기 실패: ' + (j.error || '')); })
+    .catch(function (e) { toast('내보내기 실패: ' + (e && e.message || e)); });
+}
+function importBackup() {
+  var input = qs('#pick-json'); input.value = '';
+  input.onchange = function () {
+    var f = input.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var j = JSON.parse(r.result); var src = j.db || j; if (!src.drugs) throw new Error('형식이 다릅니다');
+        var ids = {}; DB.drugs.forEach(function (d) { ids[d.id] = 1; }); DB.bags.forEach(function (b) { ids[b.id] = 1; });
+        var n = 0;
+        (src.drugs || []).forEach(function (d) { if (!ids[d.id]) { if (d.photo && d.photo.slice(0, 2) !== 'g:' && d.photo.slice(0, 5) !== 'data:' && !NATIVE) d.photo = ''; touch(d); DB.drugs.push(d); n++; } });
+        (src.bags || []).forEach(function (b) { if (!ids[b.id]) { touch(b); DB.bags.push(b); n++; } });
+        if (src.settings && src.settings.catMap) Object.keys(src.settings.catMap).forEach(function (k) { if (!DB.settings.catMap[k]) DB.settings.catMap[k] = src.settings.catMap[k]; });
+        if (src.photoLocal) Object.keys(src.photoLocal).forEach(function (k) { if (!DB.photoLocal[k]) DB.photoLocal[k] = src.photoLocal[k]; });
+        save(); render(); toast(n + '건을 불러왔어요 (사진은 백업에 포함되지 않아요)');
+      } catch (e) { toast('불러오기 실패: ' + e.message); }
+    };
+    r.readAsText(f);
+  };
+  input.click();
+}
+
+/* ocr.js — photo → text → search. Engines: ML Kit (native, via /api/ocr) or Tesseract.js (offline fallback). */
+'use strict';
+
+var ocrWorker = null, ocrWorkerLang = '', ocrLoading = null, ocrIdleTimer = null;
+var OCR_LAST_ERROR = '';
+
+function ocrEngine() { return (window.APP_INFO && APP_INFO.ocr) || 'tesseract'; }
+
+/* ---------------- Tesseract.js (fallback) ---------------- */
+function loadTesseractLib() {
+  if (window.Tesseract) return Promise.resolve();
+  var cfg = window.MEDKIT_CONFIG && MEDKIT_CONFIG.tesseract;
+  return new Promise(function (res, rej) {
+    var s = document.createElement('script'); s.src = cfg && cfg.lib ? cfg.lib : 'vendor/tesseract/tesseract.min.js';
+    s.onload = res; s.onerror = function () { rej(new Error('OCR 라이브러리를 불러오지 못했어요')); };
+    document.head.appendChild(s);
+  });
+}
+function tesseractPaths() {
+  var cfg = window.MEDKIT_CONFIG && MEDKIT_CONFIG.tesseract;
+  if (cfg && cfg.workerPath) return cfg;
+  var base = location.origin + location.pathname.replace(/[^/]*$/, '');
+  return { workerPath: base + 'vendor/tesseract/worker.min.js', corePath: base + 'vendor/tesseract/', langPath: base + 'vendor/tessdata/' };
+}
+function getOcrWorker(onProgress) {
+  var lang = DB.settings.ocrLang || 'kor';
+  if (ocrWorker && ocrWorkerLang === lang) return Promise.resolve(ocrWorker);
+  if (ocrLoading) return ocrLoading;
+  var paths = tesseractPaths();
+  ocrLoading = loadTesseractLib().then(function () {
+    if (typeof Worker === 'undefined') throw new Error('이 기기의 웹뷰가 Web Worker를 지원하지 않아요');
+    if (typeof WebAssembly === 'undefined') throw new Error('이 기기의 웹뷰가 WebAssembly를 지원하지 않아요 (Android 시스템 WebView 업데이트 필요)');
+    if (ocrWorker) { try { ocrWorker.terminate(); } catch (e) { } ocrWorker = null; }
+    return Tesseract.createWorker(lang, 1, {
+      workerPath: paths.workerPath, corePath: paths.corePath, langPath: paths.langPath,
+      gzip: true, cacheMethod: 'none',
+      logger: function (m) { if (onProgress) onProgress(m); },
+      errorHandler: function (e) { OCR_LAST_ERROR = String(e && e.message || e); }
+    });
+  }).then(function (w) {
+    ocrWorker = w; ocrWorkerLang = lang; ocrLoading = null;
+    // PSM 3 (automatic layout) reads big product names far better than tesseract.js's default single-block mode
+    return w.setParameters({ preserve_interword_spaces: '1', tessedit_pageseg_mode: '3' }).then(function () { return w; });
+  }).catch(function (e) { ocrLoading = null; OCR_LAST_ERROR = String(e && e.message || e); throw e; });
+  return ocrLoading;
+}
+function scheduleOcrRelease() {
+  clearTimeout(ocrIdleTimer);
+  ocrIdleTimer = setTimeout(function () { if (ocrWorker) { try { ocrWorker.terminate(); } catch (e) { } ocrWorker = null; ocrWorkerLang = ''; } }, 180000);
+}
+
+/* ---------------- image helpers ---------------- */
+function cropCanvas(src, box, maxW) {
+  var W = src.width, H = src.height;
+  var sx = Math.round(box.x * W), sy = Math.round(box.y * H), sw = Math.max(8, Math.round(box.w * W)), sh = Math.max(8, Math.round(box.h * H));
+  var scale = Math.min(2.5, Math.max(0.4, (maxW || 1100) / sw));
+  var c = document.createElement('canvas'); c.width = Math.max(16, Math.round(sw * scale)); c.height = Math.max(16, Math.round(sh * scale));
+  var g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+  g.drawImage(src, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return c;
+}
+// grayscale (optionally inverted when the crop is mostly dark)
+function toGray(c) {
+  var g = c.getContext('2d'), id = g.getImageData(0, 0, c.width, c.height), d = id.data, sum = 0;
+  for (var i = 0; i < d.length; i += 4) { var v = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114; d[i] = d[i + 1] = d[i + 2] = v; sum += v; }
+  var mean = sum / (d.length / 4);
+  if (mean < 110) for (var j = 0; j < d.length; j += 4) { d[j] = d[j + 1] = d[j + 2] = 255 - d[j]; }
+  var out = document.createElement('canvas'); out.width = c.width; out.height = c.height;
+  out.getContext('2d').putImageData(id, 0, 0);
+  return out;
+}
+// Bradley adaptive threshold — handles colored / gradient packaging far better than a global threshold
+function binarize(grayCanvas) {
+  var w = grayCanvas.width, hgt = grayCanvas.height, g = grayCanvas.getContext('2d'), id = g.getImageData(0, 0, w, hgt), d = id.data;
+  var integral = new Float64Array((w + 1) * (hgt + 1));
+  for (var y = 1; y <= hgt; y++) { var rowSum = 0; for (var x = 1; x <= w; x++) { rowSum += d[((y - 1) * w + (x - 1)) * 4]; integral[y * (w + 1) + x] = integral[(y - 1) * (w + 1) + x] + rowSum; } }
+  var s = Math.max(8, Math.round(Math.min(w, hgt) / 12)), half = s >> 1, t = 0.12;
+  for (var yy = 0; yy < hgt; yy++) {
+    var y1 = Math.max(0, yy - half), y2 = Math.min(hgt - 1, yy + half);
+    for (var xx = 0; xx < w; xx++) {
+      var x1 = Math.max(0, xx - half), x2 = Math.min(w - 1, xx + half);
+      var cnt = (x2 - x1 + 1) * (y2 - y1 + 1);
+      var sumv = integral[(y2 + 1) * (w + 1) + (x2 + 1)] - integral[y1 * (w + 1) + (x2 + 1)] - integral[(y2 + 1) * (w + 1) + x1] + integral[y1 * (w + 1) + x1];
+      var idx = (yy * w + xx) * 4;
+      var v = d[idx] * cnt <= sumv * (1 - t) ? 0 : 255;
+      d[idx] = d[idx + 1] = d[idx + 2] = v;
+    }
+  }
+  var out = document.createElement('canvas'); out.width = w; out.height = hgt;
+  out.getContext('2d').putImageData(id, 0, 0);
+  return out;
+}
+
+/* ---------------- recognizers → [{text, conf, hRel}] ---------------- */
+function recognizeTesseract(src, box, onStatus) {
+  var pass = 0, collected = [];
+  var c1 = toGray(cropCanvas(src, box, 1100));
+  var c2 = binarize(c1);
+  return getOcrWorker(function (m) {
+    if (m.status === 'loading language traineddata') onStatus('한글 인식 데이터 불러오는 중…', null);
+    else if (m.status === 'recognizing text') onStatus('글자 읽는 중… (' + (pass + 1) + '/2)', (pass + (m.progress || 0)) / 2);
+    else if (m.status === 'loading tesseract core') onStatus('OCR 엔진 불러오는 중… (처음 한 번만 느려요)', null);
+  }).then(function (w) {
+    return w.recognize(c1).then(function (r1) {
+      collected = collected.concat(((r1.data && r1.data.lines) || []).map(function (l) { return { text: l.text, conf: l.confidence, hRel: l.bbox ? (l.bbox.y1 - l.bbox.y0) / c1.height : 0 }; }));
+      pass = 1;
+      return w.recognize(c2);
+    }).then(function (r2) {
+      collected = collected.concat(((r2.data && r2.data.lines) || []).map(function (l) { return { text: l.text, conf: l.confidence, hRel: l.bbox ? (l.bbox.y1 - l.bbox.y0) / c2.height : 0 }; }));
+      return collected;
+    });
+  });
+}
+function recognizeNative(src, box, onStatus) {
+  onStatus('글자 읽는 중…', 0.3);
+  var c = cropCanvas(src, box, 1600);
+  var ac = window.AbortController ? new AbortController() : null;
+  var timer = setTimeout(function () { if (ac) ac.abort(); }, 60000);
+  return new Promise(function (res) { c.toBlob(res, 'image/jpeg', 0.9); }).then(function (blob) {
+    if (!blob) throw new Error('이미지 변환 실패');
+    return apiFetch('/api/ocr', { method: 'POST', body: blob, headers: { 'Content-Type': 'image/jpeg' }, signal: ac ? ac.signal : undefined });
+  }).then(function (r) { clearTimeout(timer); return r.text().then(function (t) { try { return JSON.parse(t); } catch (e) { throw new Error('OCR 응답 오류 (' + r.status + ')'); } }); }).then(function (j) {
+    if (!j.ok) throw new Error(j.error || 'OCR 실패');
+    if (!(j.lines || []).length) onStatus('글자가 하나도 안 보여요…', 0.9);
+    var H = j.height || c.height;
+    return (j.lines || []).map(function (l) { return { text: l.text, conf: 90, hRel: l.h ? l.h / H : 0, y: l.y != null ? l.y / H : 0.5 }; });
+  });
+}
+
+/* ---------------- UI ---------------- */
+function startOcr() {
+  UI.ocrPrefill = null;
+  pickImages('camera').then(function (files) {
+    if (!files.length) return;
+    return resizeImage(files[0], 2000, 0.92).then(function (r) { openOcrSheet(r.canvas); });
+  }).catch(function (e) { toast('사진 처리 실패: ' + (e && e.message || e)); });
+}
+
+function openOcrSheet(canvas) {
+  var engine = ocrEngine();
+  var full = { x: 0, y: 0, w: 1, h: 1 };
+  var box = engine === 'mlkit' ? full : { x: 0.05, y: 0.3, w: 0.9, h: 0.4 };
+  var stage, boxEl, busy = false, ctx;
+  var session = { expiry: null, pack: null, lines: [], photoPromise: null, dismissed: {} }; // facts gathered from every pass over this photo
+  ctx = openSheet({
+    title: '사진에서 약 이름 찾기', full: true,
+    render: function (c) {
+      var b = c.body;
+      b.appendChild(h('p', { class: 'muted', style: 'margin:4px 0 8px;font-size:14px' },
+        engine === 'mlkit' ? '사진 전체에서 글자를 읽어 약 이름일 가능성이 높은 순서로 보여줘요. 잘못 읽혔으면 노란 상자를 이름 부분에 맞추고 "다시 인식"을 누르세요.'
+          : '노란 상자를 약 이름 위로 끌어다 맞춘 뒤 "글자 인식"을 누르세요. 글자가 크고 또렷할수록 잘 읽혀요.'));
+      // results first, so they are visible without scrolling past a tall photo
+      b.appendChild(h('div', { id: 'ocr-status', class: 'ocr-status' }));
+      b.appendChild(h('div', { class: 'progress', id: 'ocr-prog' }, h('i')));
+      b.appendChild(h('div', { id: 'ocr-lines', class: 'ocr-lines' }));
+      stage = h('div', { class: 'ocr-stage' });
+      var img = h('img', { src: canvas.toDataURL('image/jpeg', 0.8), alt: '촬영한 사진', onload: function () { layoutBox(); } });
+      boxEl = h('div', { class: 'ocr-box' }, h('div', { class: 'hdl', style: 'right:0;bottom:0;transform:translate(50%,50%)' }));
+      stage.appendChild(img); stage.appendChild(boxEl);
+      b.appendChild(h('div', { class: 'ocr-wrap' }, stage));
+      b.appendChild(h('div', { class: 'chips', style: 'margin-top:8px' },
+        h('button', { class: 'chip sm', onclick: function () { box = full; layoutBox(); } }, '전체'),
+        h('button', { class: 'chip sm', onclick: function () { box = { x: 0.05, y: 0.3, w: 0.9, h: 0.4 }; layoutBox(); } }, '가운데'),
+        h('button', { class: 'chip sm', onclick: function () { box = { x: 0.05, y: 0.05, w: 0.9, h: 0.35 }; layoutBox(); } }, '위쪽')));
+      setupDrag();
+      setTimeout(layoutBox, 50);
+      if (engine === 'mlkit') setTimeout(runOcr, 150);
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn', id: 'ocr-manual', onclick: function () { c.close(); openAddSheet({}, { mode: 'add' }); } }, '직접 입력'));
+      c.foot.appendChild(h('button', { class: 'btn primary', id: 'ocr-go', onclick: runOcr }, engine === 'mlkit' ? '다시 인식' : '글자 인식'));
+    },
+    onClose: function () { scheduleOcrRelease(); }
+  });
+  function layoutBox() {
+    var r = stage.getBoundingClientRect();
+    boxEl.style.left = (box.x * r.width) + 'px'; boxEl.style.top = (box.y * r.height) + 'px';
+    boxEl.style.width = (box.w * r.width) + 'px'; boxEl.style.height = (box.h * r.height) + 'px';
+  }
+  function setupDrag() {
+    var mode = null, start = null, orig = null;
+    function pt(e) { var t = e.touches ? e.touches[0] : e; var r = stage.getBoundingClientRect(); return { x: (t.clientX - r.left) / r.width, y: (t.clientY - r.top) / r.height }; }
+    function down(e) {
+      var p = pt(e); orig = { x: box.x, y: box.y, w: box.w, h: box.h }; start = p;
+      var nearCorner = Math.abs(p.x - (box.x + box.w)) < 0.08 && Math.abs(p.y - (box.y + box.h)) < 0.08;
+      var inside = p.x >= box.x && p.x <= box.x + box.w && p.y >= box.y && p.y <= box.y + box.h;
+      mode = nearCorner ? 'resize' : (inside && !(box.w === 1 && box.h === 1) ? 'move' : 'draw');
+      if (mode === 'draw') { box = { x: p.x, y: p.y, w: 0, h: 0 }; }
+      e.preventDefault();
+    }
+    function move(e) {
+      if (!mode) return; var p = pt(e); var dx = p.x - start.x, dy = p.y - start.y;
+      if (mode === 'move') { box.x = Math.min(Math.max(0, orig.x + dx), 1 - orig.w); box.y = Math.min(Math.max(0, orig.y + dy), 1 - orig.h); }
+      else if (mode === 'resize') { box.w = Math.min(Math.max(0.05, orig.w + dx), 1 - box.x); box.h = Math.min(Math.max(0.05, orig.h + dy), 1 - box.y); }
+      else { var x0 = Math.min(start.x, p.x), y0 = Math.min(start.y, p.y); box = { x: Math.max(0, x0), y: Math.max(0, y0), w: Math.min(Math.abs(p.x - start.x), 1 - x0), h: Math.min(Math.abs(p.y - start.y), 1 - y0) }; }
+      layoutBox(); e.preventDefault();
+    }
+    function up() { if (mode === 'draw' && (box.w < 0.05 || box.h < 0.03)) { box = full; layoutBox(); } mode = null; }
+    stage.addEventListener('touchstart', down, { passive: false }); stage.addEventListener('touchmove', move, { passive: false }); stage.addEventListener('touchend', up);
+    stage.addEventListener('mousedown', down); window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+  }
+  function runOcr() {
+    if (busy) return; busy = true;
+    var go = qs('#ocr-go'); if (go) go.disabled = true;
+    var status = qs('#ocr-status'), prog = qs('#ocr-prog i');
+    function onStatus(msg, p, done) {
+      if (status) { status.innerHTML = ''; if (!done) status.appendChild(h('span', { class: 'spinner' })); status.appendChild(h('span', null, msg)); status.className = 'ocr-status' + (done ? ' done' : ''); }
+      if (prog && p != null) prog.style.width = Math.round(p * 100) + '%';
+    }
+    var linesWrap = qs('#ocr-lines'); if (linesWrap) linesWrap.innerHTML = '';
+    onStatus('글자 인식 준비 중…', 0.05);
+    var run = engine === 'mlkit' ? recognizeNative(canvas, box, onStatus) : recognizeTesseract(canvas, box, onStatus);
+    run.then(function (items) {
+      if (prog) prog.style.width = '100%';
+      var lines = rankOcrLines(items);
+      var found = extractFacts(items);
+      // facts accumulate over re-recognitions of the same photo: cropping to the name must not lose the date read earlier
+      if (found.expiry && session.dismissed.expiry !== found.expiry.value) session.expiry = found.expiry;
+      if (found.pack && session.dismissed.pack !== found.pack.value + found.pack.unit) session.pack = found.pack;
+      if (lines.length) session.lines = lines;
+      var wrap = qs('#ocr-lines'); if (!wrap) return; wrap.innerHTML = '';
+      ctx.body.scrollTop = 0;
+      function photoPromise() {
+        if (!session.photoPromise) session.photoPromise = new Promise(function (res) { canvas.toBlob(res, 'image/jpeg', 0.85); }).then(function (b) { return b ? uploadPhoto(b) : ''; }).catch(function () { return ''; });
+        return session.photoPromise;
+      }
+      function handoff() { return { expiry: session.expiry ? session.expiry.value : '', packUnit: session.pack ? session.pack.value : null, photoPromise: photoPromise() }; }
+      function go(name) { UI.ocrPrefill = handoff(); ctx.close(); UI.query = name; UI.tab = 'drugs'; render(); runSearch(true); }
+      var facts = h('div', { class: 'chips', style: 'margin-bottom:6px' });
+      if (session.expiry) facts.appendChild(h('button', { class: 'chip on', title: session.expiry.source, onclick: function () { session.dismissed.expiry = session.expiry.value; session.expiry = null; facts.removeChild(this); toast('유효기간 자동 입력을 껐어요'); } }, '📅 유효기간 ' + session.expiry.value + ' 자동 입력 ✕'));
+      if (session.pack) facts.appendChild(h('button', { class: 'chip on', title: session.pack.source, onclick: function () { session.dismissed.pack = session.pack.value + session.pack.unit; session.pack = null; facts.removeChild(this); } }, '📦 포장단위 ' + session.pack.value + session.pack.unit + ' ✕'));
+      facts.appendChild(h('span', { class: 'chip', style: 'border-style:dashed' }, '📷 사진 함께 저장'));
+      wrap.appendChild(facts);
+      if (!lines.length) {
+        onStatus('이 영역에서는 글자를 찾지 못했어요. 상자를 이름 부분에 더 가깝게 맞추거나 "전체"로 다시 인식해 보세요.', 1, true);
+        lines = session.lines || [];
+        if (lines.length) wrap.appendChild(h('div', { class: 'muted', style: 'font-size:12px;margin:4px 0' }, '이전에 읽은 후보'));
+      } else onStatus('인식된 글자 — 약 이름을 누르면 바로 검색해요', 1, true);
+      lines.slice(0, 8).forEach(function (l, i) {
+        wrap.appendChild(h('button', { class: 'ocr-line' + (i === 0 ? ' best' : ''), onclick: function () { go(l); } }, l));
+      });
+      wrap.appendChild(h('div', { class: 'quick-add' },
+        h('input', { placeholder: '인식이 틀렸으면 직접 고쳐서 검색', value: lines[0] || '', id: 'ocr-fix' }),
+        h('button', { class: 'btn primary', style: 'min-height:46px', onclick: function () { var v = qs('#ocr-fix').value.trim(); if (!v) return; go(v); } }, '검색')));
+      var manual = qs('#ocr-manual'); if (manual) manual.onclick = function () { UI.ocrPrefill = handoff(); ctx.close(); openAddSheet({ name: lines[0] || '' }, { mode: 'add' }); };
+    }).catch(function (e) {
+      var msg = String(e && e.message || e);
+      OCR_LAST_ERROR = msg;
+      ctx.body.scrollTop = 0;
+      onStatus('인식 실패: ' + msg + ' — 더보기 → 진단 정보에서 자세히 볼 수 있어요', 1, true);
+    }).then(function () { busy = false; if (go) go.disabled = false; });
+  }
+}
+
+// items: [{text, conf, hRel}] → ranked unique strings, product-name-like first
+function rankOcrLines(items) {
+  var seen = {}, out = [];
+  var maxH = 0; items.forEach(function (it) { if (it.hRel > maxH) maxH = it.hRel; });
+  items.forEach(function (it) {
+    var l = String(it.text || '').replace(/[^ㄱ-ㆎ가-힣a-zA-Z0-9.\/\-+ ]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!l) return;
+    var han = (l.match(/[가-힣]/g) || []).length, lat = (l.match(/[a-zA-Z]/g) || []).length, jamo = (l.match(/[ㄱ-ㆎ]/g) || []).length;
+    if (han + lat < 2) return;
+    if (l.length > 40) l = l.slice(0, 40);
+    var compact = l.replace(/\s+/g, '');
+    var score = Math.min(16, han * 2) + Math.min(10, lat) - jamo * 3 + (it.conf || 0) / 12;
+    if (maxH > 0 && it.hRel) score += 10 * (it.hRel / maxH); // the biggest print on a box is usually the product name
+    var core = compact.replace(/\d+(\.\d+)?(mg|g|ml|mL|%|밀리그램|mcg|㎎|㎖)$/i, '');
+    if (/(정|캡슐|서방정|시럽|크림|연고|액|캅셀|산|과립|주|겔|로션|패취|패치|세립|현탁액|점안액|좌제)$/.test(core)) score += 8;
+    if (compact.length >= 3 && compact.length <= 12) score += 4;
+    if (compact.length > 20) score -= 4;
+    if (/(산염|염산|나트륨|수화물|칼륨|칼슘|마그네슘|트륨)/.test(compact) && compact.length > 8) score -= 6; // ingredient line, not a product name
+    if (/^(제조|수입|유효|사용|보관|성분|함량|전문|일반|의약품|주식회사|제약|\(주\)|Lot|LOT|EXP|제조번호|MADE|포장|저장|효능|용법|주의|식약처|KGMP|GMP)/i.test(l)) score -= 8;
+    if (/^[A-Za-z0-9 .\/\-+]+$/.test(l) && !/(tab|cap|syr|inj|cream|mg)/i.test(l)) score -= 3; // latin-only noise
+    var key = compact.toLowerCase();
+    if (seen[key] !== undefined) { if (score > out[seen[key]].s) out[seen[key]].s = score; return; }
+    seen[key] = out.length;
+    out.push({ l: l, s: score });
+  });
+  out.sort(function (a, b) { return b.s - a.s; });
+  return out.map(function (x) { return x.l; });
+}
+
+/* ---------------- expiry / pack detection from recognized lines ---------------- */
+// Returns {expiry:{value,source}|null, pack:{value,unit,source}|null}. Dates near 사용기한/유효기간/EXP win; otherwise the latest plausible date.
+function extractFacts(items) {
+  var texts = items.map(function (it) { return String(it.text || ''); });
+  var joined = texts.join('\n');
+  var cands = [];
+  function push(y, m, d, source, keyed) {
+    y = Number(y); if (y < 100) y += 2000;
+    m = m == null ? null : Number(m); d = d == null ? null : Number(d);
+    if (y < 2020 || y > 2045) return;
+    if (m != null && (m < 1 || m > 12)) return;
+    if (d != null && (d < 1 || d > 31)) return;
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var v = String(y) + (m != null ? '-' + pad(m) : '') + (d != null ? '-' + pad(d) : '');
+    cands.push({ value: v, source: source.trim(), keyed: keyed, t: new Date(y, m != null ? m - 1 : 11, d != null ? d : 28).getTime() });
+  }
+  var keyRe = /(사용기한|유효기간|유통기한|유효기한|사용기간|EXP\.?|Exp\.?|exp\.?|EXPIRY|Expiry|Best before|BBE)/;
+  texts.forEach(function (raw, idx) {
+    var t = raw.replace(/[Oo]/g, function (ch, off) { var prev = raw[off - 1] || '', next = raw[off + 1] || ''; return /\d/.test(prev) || /\d/.test(next) ? '0' : ch; }); // O→0 inside number groups
+    var keyed = keyRe.test(t) || (idx > 0 && keyRe.test(texts[idx - 1]) && !/\d{4}/.test(texts[idx - 1]));
+    var m, re;
+    re = /(20\d{2})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?/g;  // 2027.09.18 / 2027-9-18 / 2027년 9월 18일
+    while ((m = re.exec(t))) push(m[1], m[2], m[3], raw, keyed);
+    re = /(20\d{2})\s*[.\-\/년]\s*(\d{1,2})(?![\d.\-\/])\s*월?/g;                     // 2027.09 / 2027-09
+    while ((m = re.exec(t))) push(m[1], m[2], null, raw, keyed);
+    re = /(?:^|[^\d])(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])(?!\d)/g;                  // 20270918
+    while ((m = re.exec(t))) push(m[1], m[2], m[3], raw, keyed);
+    re = /(?:^|[^\d])(2[0-9])\s*[.\-\/]\s*(\d{2})\s*[.\-\/]\s*(\d{2})(?!\d)/g;        // 27.09.18 (only trusted next to a keyword)
+    while ((m = re.exec(t))) if (keyed) push(m[1], m[2], m[3], raw, true);
+  });
+  var expiry = null;
+  if (cands.length) {
+    var keyedC = cands.filter(function (c) { return c.keyed; });
+    var pool = keyedC.length ? keyedC : cands;
+    pool.sort(function (a, b) { return b.t - a.t; });
+    expiry = { value: pool[0].value, source: pool[0].source };
+  }
+  var pack = null, pm;
+  var packRe = /(?:^|[^\d.])(\d{1,4})\s*(정|캡슐|캅셀|포|매|앰플|바이알|mL|ml|㎖)(?![a-zA-Z가-힣])/g;
+  var best = null;
+  texts.forEach(function (raw) {
+    while ((pm = packRe.exec(raw))) {
+      var n = Number(pm[1]); if (!n || n > 5000) continue;
+      var unit = pm[2].replace('㎖', 'mL').replace('ml', 'mL');
+      var score = (/정|캡슐|캅셀|포/.test(unit) ? 2 : 1) + (/함량|분량|중/.test(raw) ? -3 : 0);
+      if (!best || score > best.score) best = { value: n, unit: unit, source: raw.trim(), score: score };
+    }
+  });
+  if (best && best.score > 0) pack = best;
+  return { expiry: expiry, pack: pack, text: joined };
+}
+
+/* main.js — router + startup */
+'use strict';
+
+function render() {
+  var root = qs('#view');
+  qsa('.tab').forEach(function (t) { t.classList.toggle('active', t.dataset.tab === UI.tab); });
+  if (UI.tab === 'drugs') renderDrugs(root);
+  else if (UI.tab === 'bags') renderBags(root);
+  else renderMore(root);
+  window.scrollTo(0, 0);
+}
+
+// iPhone: the web version becomes an app through Safari's "홈 화면에 추가"; home-screen apps keep their own storage,
+// so the hint is shown while the page still runs inside Safari.
+function showInstallHint() {
+  if (MODE !== 'web' || !isIos() || isStandalone()) return;
+  try { if (localStorage.getItem('medkit.installHint') === 'x') return; } catch (e) { }
+  var bar = h('div', { class: 'install-hint', role: 'status' },
+    h('div', null, h('b', null, '홈 화면에 추가하면 앱처럼 써요'), h('div', { class: 'muted', style: 'font-size:12px' }, 'Safari 아래 공유 버튼(⬆︎) → "홈 화면에 추가"')),
+    h('button', { class: 'iconbtn', 'aria-label': '닫기', onclick: function () { bar.remove(); try { localStorage.setItem('medkit.installHint', 'x'); } catch (e) { } } }, '✕'));
+  var app = qs('#app'); app.insertBefore(bar, app.firstChild);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  qsa('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      if (UI.tab === t.dataset.tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      UI.tab = t.dataset.tab; UI.ocrPrefill = null; render();
+    });
+  });
+  loadDb().then(function () {
+    render();
+    if (MODE === 'web' && !syncConfigured() && !sessionStorage.getItem('medkit.previewNotice')) {
+      try { sessionStorage.setItem('medkit.previewNotice', '1'); } catch (e) { }
+      toast('팀 초대 링크로 열거나 더보기 › 팀 공유 연결하기를 하면 검색과 공유가 켜져요');
+    }
+    if (MODE === 'gas' || (MODE === 'web' && syncConfigured() && !DB.settings.sync.name)) {
+      remoteCall('ping', {}).then(function (p) { if (p && p.ok) { DB.settings.sync.name = p.name || ''; DB.settings.sync.sheetUrl = p.sheetUrl || ''; save(); if (UI.joinedViaLink) { toast('팀에 연결됐어요: ' + (p.name || '공유 시트')); UI.joinedViaLink = false; render(); } } }).catch(function () { });
+    }
+    if (syncConfigured()) { syncNow({}); startPeriodicSync(); }
+    if (MODE === 'web' && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      navigator.serviceWorker.register('sw.js').catch(function () { });
+    }
+    syncTeamToLocation();
+    showInstallHint();
+  });
+  window.addEventListener('pagehide', function () { clearTimeout(saveTimer); flushSave(); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') { clearTimeout(saveTimer); flushSave(); }
+    else if (syncConfigured() && Date.now() - SYNC.lastOk > 20000) syncNow({});
+  });
+  window.addEventListener('online', function () { if (syncConfigured()) syncNow({}); });
+});
+
+</script>
+</body>
+</html>
