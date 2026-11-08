@@ -84,7 +84,7 @@ h1, h2, h3 { margin: 0; font-weight: 700; }
 /* ---------- tab bar ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--surface);
@@ -188,6 +188,7 @@ h1, h2, h3 { margin: 0; font-weight: 700; }
 .btn.amber { background: var(--amber); border-color: var(--amber); color: #fff; }
 .btn.danger { color: var(--red); border-color: var(--red); background: var(--surface); }
 .btn.ghost { border-color: transparent; background: none; color: var(--ink-2); }
+.btn.sm { min-height: 36px; padding: 0 12px; font-size: 13px; }
 .btn.sm { min-height: 36px; padding: 6px 12px; font-size: 14px; border-radius: 10px; }
 .btn:disabled { opacity: .5; }
 .btn:active { transform: scale(.98); }
@@ -325,6 +326,65 @@ details.more[open] summary::before { content: "▾ "; }
 .toast button { margin-left: auto; border: 0; background: none; color: var(--green); font-weight: 800; }
 @media (prefers-color-scheme: dark) { .toast button { color: #8FE0C0; } }
 
+/* ---------- 국내: roster + vehicle seating ---------- */
+.seg { display: flex; background: var(--surface-2); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg-b { flex: 1; border: 0; background: none; border-radius: 10px; min-height: 38px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.seg-b b { font-weight: 800; margin-left: 2px; }
+.seg-b.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.row-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 14px 0; }
+.row-actions .btn { min-height: 40px; }
+.veh-tag { color: var(--green-ink); font-weight: 600; }
+.chips.wrap { flex-wrap: wrap; }
+.chip.person { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 14px; color: var(--ink); background: var(--surface); border-color: var(--line); user-select: none; -webkit-user-select: none; }
+.chip.person small { font-size: 11px; color: var(--ink-3); font-weight: 600; }
+.chip.person.driver { background: var(--green-soft); border-color: var(--green); color: var(--green-ink); }
+.chip.person.carrying { background: var(--ink); color: var(--bg); border-color: var(--ink); transform: scale(1.04); }
+.chip.person.carrying small { color: var(--bg); opacity: .8; }
+.chip.person.drag-src { opacity: .35; }
+.chip.empty-seat { border-style: dashed; color: var(--ink-3); background: none; font-weight: 500; }
+.veh-card { padding: 12px 12px 12px; }
+.veh-head { display: flex; align-items: center; gap: 10px; }
+.veh-head > div:first-child { flex: 1; min-width: 0; }
+.veh-cap { font-size: 14px; color: var(--ink-2); white-space: nowrap; cursor: pointer; }
+.veh-cap b { font-size: 20px; color: var(--ink); }
+.veh-cap.over, .veh-cap.over b { color: var(--red); }
+.veh-card.over { border-color: var(--red); }
+.veh-card .seats { margin-top: 10px; min-height: 36px; }
+.veh-card.target { outline: 2px dashed var(--green); outline-offset: -2px; }
+.iconbtn.sm { width: 36px; height: 36px; font-size: 16px; }
+.pool { margin: 14px 14px 0; padding: 10px 12px 12px; border: 1px dashed var(--line); border-radius: 14px; background: var(--surface-2); }
+.pool .group-h { cursor: default; padding-top: 0; }
+.drop.drop-hover { outline: 3px solid var(--green); outline-offset: -3px; background: var(--green-soft); }
+.drag-ghost { position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none; padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--bg); font-weight: 700; font-size: 15px; box-shadow: var(--shadow); will-change: transform; }
+body.dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
+body.dragging .veh-card, body.dragging .pool { transition: outline-color .1s; }
+.notice.carry { position: sticky; top: calc(var(--topbar-h, 60px)); z-index: 5; display: flex; align-items: center; gap: 4px; }
+
+/* ---------- drug list: folding + select mode ---------- */
+.fold-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 2px 0; font-size: 12px; }
+.group-h { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; }
+.group-h .gh-name { flex: 1; min-width: 0; }
+.group-h .fold-ic { color: var(--ink-3); width: 14px; font-size: 12px; }
+.group-h.folded { opacity: .75; }
+.sub-h { font-size: 12px; font-weight: 700; color: var(--ink-3); padding: 6px 4px 0; letter-spacing: .01em; }
+input.sel { width: 22px; height: 22px; accent-color: var(--green); flex: none; margin: 0; }
+.sel-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.sel-left > div { min-width: 0; }
+.card.sel-card { cursor: pointer; }
+.card.sel-card.picked { outline: 2px solid var(--green); outline-offset: -2px; background: var(--green-soft); }
+.sel-lots .stamp { cursor: pointer; }
+.sel-lots .stamp.picked { background: var(--green); color: #fff; border-color: var(--green); }
+.select-bar {
+  position: fixed; left: 0; right: 0; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); z-index: 30;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(0,0,0,.08);
+  padding: 8px 14px; display: flex; flex-direction: column; gap: 8px;
+}
+.select-bar .sb-count { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; }
+.select-bar .sb-actions { display: flex; gap: 8px; }
+.select-bar .sb-actions .btn { flex: 1; min-height: 42px; }
+.select-bar .sb-actions .btn.ghost { flex: 0 0 auto; }
+body.has-select-bar .view { padding-bottom: calc(var(--tabbar-h) + 120px + env(safe-area-inset-bottom)); }
+
 /* ---------- team login ---------- */
 .login-hero { text-align: center; padding: 18px 0 6px; }
 .login-ic { width: 72px; height: 72px; margin: 0 auto 10px; border-radius: 22px; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 38px; box-shadow: var(--shadow); }
@@ -395,6 +455,7 @@ details.more[open] summary::before { content: "▾ "; }
   <nav class="tabbar" id="tabbar">
     <button class="tab" data-tab="drugs"><span class="tab-ic">💊</span><span>의약품</span></button>
     <button class="tab" data-tab="bags"><span class="tab-ic">🧳</span><span>짐분배</span></button>
+    <button class="tab" data-tab="domestic"><span class="tab-ic">🚐</span><span>국내</span></button>
     <button class="tab" data-tab="more"><span class="tab-ic">☰</span><span>더보기</span></button>
   </nav>
 </div>
@@ -404,7 +465,7 @@ details.more[open] summary::before { content: "▾ "; }
 <input type="file" id="pick-gallery" accept="image/*" multiple hidden>
 <input type="file" id="pick-json" accept=".json,application/json" hidden>
 <script>
-window.MEDKIT_CONFIG = { mode: 'web', build: '20261108180429', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
+window.MEDKIT_CONFIG = { mode: 'web', build: '20261108200021', webBaseUrl: 'https://plan-t-kty.github.io/medkit-web/', tesseract: {
   lib: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
   workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
   corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
@@ -429,7 +490,8 @@ var SERVER_URL = (window.MEDKIT_CONFIG && MEDKIT_CONFIG.serverUrl) || '';
 function isIos() { return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
 function isStandalone() { return !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)); }
 
-var DB = { version: 2, drugs: [], bags: [], settings: { ocrLang: 'kor', catMap: {}, sync: null }, photoLocal: {} };
+var DB = { version: 2, drugs: [], bags: [], people: [], vehicles: [], settings: { ocrLang: 'kor', catMap: {}, sync: null }, photoLocal: {} };
+var KINDS = ['drugs', 'bags', 'people', 'vehicles']; // every synced record list in DB
 var UI = { tab: 'drugs', query: '', filter: 'all', results: null, searching: false, searchError: '' };
 
 /* ---------- tiny DOM helper ---------- */
@@ -601,7 +663,7 @@ function flushSave() {
   }
 }
 function normalizeDb(d) {
-  d.drugs = d.drugs || []; d.bags = d.bags || []; d.settings = d.settings || {}; d.settings.catMap = d.settings.catMap || {};
+  d.drugs = d.drugs || []; d.bags = d.bags || []; d.people = d.people || []; d.vehicles = d.vehicles || []; d.settings = d.settings || {}; d.settings.catMap = d.settings.catMap || {};
   if (!d.settings.ocrLang) d.settings.ocrLang = 'kor';
   d.photoLocal = d.photoLocal || {};
   d.drugs.forEach(function (r) { if (!r.updatedAt) r.updatedAt = r.createdAt || nowIso(); });
@@ -629,7 +691,7 @@ function loadDb() {
           var turl = decodeURIComponent(tm[1]), tid = im ? normTeamId(decodeURIComponent(im[1])) : '';
           if (validTeamUrl(turl)) {
             if (tid) { if (!DB.settings.sync || DB.settings.sync.teamId !== tid) UI.loginPrefill = { url: turl, id: tid }; }
-            else if (!DB.settings.sync || DB.settings.sync.url !== turl) { DB.settings.sync = { url: turl, lastPull: 0 }; DB.drugs.forEach(function (r) { r._dirty = true; }); DB.bags.forEach(function (r) { r._dirty = true; }); UI.joinedViaLink = true; }
+            else if (!DB.settings.sync || DB.settings.sync.url !== turl) { DB.settings.sync = { url: turl, lastPull: 0 }; markAllDirty(); UI.joinedViaLink = true; }
           }
         } catch (e) { }
       }
@@ -672,6 +734,16 @@ function putDrug(rec) { var i = DB.drugs.findIndex(function (d) { return d.id ==
 function removeDrug(id) { var r = DB.drugs.filter(function (d) { return d.id === id; })[0]; if (!r) return; if (syncConfigured()) { r.deleted = true; touch(r); } else DB.drugs = DB.drugs.filter(function (d) { return d.id !== id; }); save(); }
 function putBag(rec) { var i = DB.bags.findIndex(function (b) { return b.id === rec.id; }); touch(rec); if (i >= 0) DB.bags[i] = rec; else DB.bags.push(rec); save(); }
 function removeBag(id) { var r = DB.bags.filter(function (b) { return b.id === id; })[0]; if (!r) return; if (syncConfigured()) { r.deleted = true; touch(r); } else DB.bags = DB.bags.filter(function (b) { return b.id !== id; }); save(); }
+// 국내: 명단(people) · 차량(vehicles)
+function livePeople() { return DB.people.filter(function (p) { return !p.deleted; }); }
+function liveVehicles() { return DB.vehicles.filter(function (v) { return !v.deleted; }); }
+function putRecord(kind, rec) { var list = DB[kind], i = list.findIndex(function (r) { return r.id === rec.id; }); touch(rec); if (i >= 0) list[i] = rec; else list.push(rec); save(); }
+function removeRecord(kind, id) { var list = DB[kind], r = list.filter(function (x) { return x.id === id; })[0]; if (!r) return; if (syncConfigured()) { r.deleted = true; touch(r); } else DB[kind] = list.filter(function (x) { return x.id !== id; }); save(); }
+/** undo helper for bulk deletes: bring records back (tombstone → live, or re-insert) */
+function restoreRecords(kind, recs) {
+  recs.forEach(function (rec) { var list = DB[kind], i = list.findIndex(function (x) { return x.id === rec.id; }); rec.deleted = false; touch(rec); if (i >= 0) list[i] = rec; else list.push(rec); });
+  save();
+}
 
 /* ---------- sync with the shared Google Sheet ---------- */
 var SYNC = { inflight: false, timer: null, status: 'off', message: '', lastOk: 0, periodic: null };
@@ -764,14 +836,15 @@ function connectTeam(url, team, auth) {
   var prev = DB.settings.sync || {};
   DB.settings.sync = { url: url, teamId: team.id, auth: auth, name: team.name || team.id, sheetUrl: team.sheetUrl || prev.sheetUrl || '', serverName: team.sheetName || prev.serverName || '', lastPull: 0 };
   DB.settings.skipLogin = false;
-  DB.drugs.forEach(function (r) { r._dirty = true; }); DB.bags.forEach(function (r) { r._dirty = true; });
+  markAllDirty();
   save(); setSyncStatus('off'); startPeriodicSync(); syncTeamToLocation();
 }
+function markAllDirty() { KINDS.forEach(function (k) { DB[k].forEach(function (r) { r._dirty = true; }); }); }
 /** Logout: the team's data stays in the sheet; this device is emptied so another team can log in. */
 function logoutTeam() {
   DB.drugs.forEach(function (d) { if (d.photo) deletePhoto(d.photo); });
   DB.bags.forEach(function (b) { (b.photos || []).forEach(deletePhoto); });
-  DB.drugs = []; DB.bags = []; DB.photoLocal = {}; DB.settings.sync = null; DB.settings.skipLogin = false;
+  KINDS.forEach(function (k) { DB[k] = []; }); DB.photoLocal = {}; DB.settings.sync = null; DB.settings.skipLogin = false;
   save(); setSyncStatus('off'); startPeriodicSync(); syncTeamToLocation(); render();
 }
 function setSyncStatus(status, message) {
@@ -837,29 +910,31 @@ function mergeIncoming(list, incoming) {
 function purgeTombstones() {
   var cutoff = Date.now() - 30 * 86400000;
   var keep = function (r) { return !(r.deleted && !r._dirty && (Date.parse(r.updatedAt || '') || 0) < cutoff); };
-  DB.drugs = DB.drugs.filter(keep); DB.bags = DB.bags.filter(keep);
+  KINDS.forEach(function (k) { DB[k] = DB[k].filter(keep); });
 }
 function syncNow(opts) {
   opts = opts || {};
   if (!syncConfigured()) return Promise.resolve(false);
   if (SYNC.inflight) { if (opts.manual) toast('이미 동기화 중이에요'); return Promise.resolve(false); }
   SYNC.inflight = true; setSyncStatus('syncing');
-  var dirtyDrugs = DB.drugs.filter(function (d) { return d._dirty; }), dirtyBags = DB.bags.filter(function (b) { return b._dirty; });
+  var dirty = {}, dirtyCount = 0; KINDS.forEach(function (k) { dirty[k] = DB[k].filter(function (r) { return r._dirty; }); dirtyCount += dirty[k].length; });
   var since = Math.max(0, (DB.settings.sync.lastPull || 0) - 120000);
-  return uploadLocalPhotos(dirtyDrugs, 'photo', false).then(function () { return uploadLocalPhotos(dirtyBags, 'photos', true); }).then(function () {
-    if (!dirtyDrugs.length && !dirtyBags.length) return null;
-    return remoteCall('push', {}, { drugs: dirtyDrugs.map(stripLocal), bags: dirtyBags.map(stripLocal) }).then(function (res) {
+  return uploadLocalPhotos(dirty.drugs, 'photo', false).then(function () { return uploadLocalPhotos(dirty.bags, 'photos', true); }).then(function () {
+    if (!dirtyCount) return null;
+    var body = {}; KINDS.forEach(function (k) { if (dirty[k].length) body[k] = dirty[k].map(stripLocal); });
+    return remoteCall('push', {}, body).then(function (res) {
       if (!res || !res.ok) throw remoteError(res, '업로드 실패');
       var applied = {}; (res.applied || []).forEach(function (id) { applied[id] = 1; });
-      dirtyDrugs.concat(dirtyBags).forEach(function (r) { if (applied[r.id]) delete r._dirty; });
-      (res.rejected || []).forEach(function (rj) { var r = DB.drugs.concat(DB.bags).filter(function (x) { return x.id === rj.id; })[0]; if (r) delete r._dirty; }); // server copy is newer: pull will bring it
+      var all = []; KINDS.forEach(function (k) { all = all.concat(dirty[k]); });
+      all.forEach(function (r) { if (applied[r.id]) delete r._dirty; });
+      (res.rejected || []).forEach(function (rj) { var r = all.filter(function (x) { return x.id === rj.id; })[0]; if (r) delete r._dirty; }); // server copy is newer: pull will bring it
       return res;
     });
   }).then(function () {
     return remoteCall('pull', { since: since });
   }).then(function (res) {
     if (!res || !res.ok) throw remoteError(res, '내려받기 실패');
-    var changed = mergeIncoming(DB.drugs, res.drugs || []) + mergeIncoming(DB.bags, res.bags || []);
+    var changed = 0; KINDS.forEach(function (k) { changed += mergeIncoming(DB[k], res[k] || []); });
     DB.settings.sync.lastPull = res.time || Date.now();
     purgeTombstones();
     clearTimeout(saveTimer); flushSave();
@@ -1055,7 +1130,8 @@ function renderDrugs(root) {
       h('button', { class: 'iconbtn', title: '사진으로 찾기', 'aria-label': '사진으로 찾기', onclick: function () { startOcr(); } }, '📷'),
       h('button', { class: 'iconbtn primary', title: '직접 입력', 'aria-label': '직접 입력', onclick: function () { openAddSheet({}, { mode: 'add' }); } }, '＋')),
     h('div', { class: 'subbar', style: 'padding-left:0;padding-right:0' },
-      syncPill(), filterChip('all', '전체'), filterChip('soon', '유효기간 1년 이내'), filterChip('expired', '만료'), filterChip('nocat', '분류 없음')));
+      syncPill(), filterChip('all', '전체'), filterChip('soon', '유효기간 1년 이내'), filterChip('expired', '만료'), filterChip('nocat', '분류 없음'),
+      h('button', { class: 'chip select-chip' + (UI.selectMode ? ' on' : ''), onclick: function () { toggleSelectMode(); } }, UI.selectMode ? '선택 끝' : '☑ 선택')));
   root.appendChild(top);
   root.appendChild(h('div', { id: 'drug-body' }));
   renderDrugBody();
@@ -1163,14 +1239,90 @@ function renderDrugBody() {
   var byCat = {}, catOrder = [];
   groups.forEach(function (g) { var c = g.cat1 || '분류 없음'; if (!byCat[c]) { byCat[c] = []; catOrder.push(c); } byCat[c].push(g); });
   catOrder.sort(function (a, b) { if (a === '분류 없음') return 1; if (b === '분류 없음') return -1; return a.localeCompare(b, 'ko'); });
-  var list = h('div', { class: 'list' });
+  UI.folded = UI.folded || {}; UI.selected = UI.selected || {};
+  var list = h('div', { class: 'list' + (UI.selectMode ? ' selecting' : '') });
+  var allFolded = catOrder.length > 1 && catOrder.every(function (c) { return UI.folded[c]; });
+  if (catOrder.length > 1) list.appendChild(h('div', { class: 'fold-row' },
+    h('span', { class: 'muted' }, groups.length + '종 · ' + groups.reduce(function (n, g) { return n + g.lots.length; }, 0) + '건 · ' + catOrder.length + '개 분류'),
+    h('button', { class: 'btn ghost sm', onclick: function () { catOrder.forEach(function (c) { UI.folded[c] = !allFolded; }); renderDrugBody(); } }, allFolded ? '모두 펼치기' : '모두 접기')));
   catOrder.forEach(function (c) {
     var gs = byCat[c].sort(function (a, b) { return (a.cat2 || '').localeCompare(b.cat2 || '', 'ko') || a.name.localeCompare(b.name, 'ko'); });
-    var lotCount = gs.reduce(function (s, g) { return s + g.lots.length; }, 0);
-    list.appendChild(h('div', { class: 'group-h' }, c, h('span', { class: 'cnt' }, gs.length + '종 · ' + lotCount + '건')));
-    gs.forEach(function (g) { list.appendChild(groupCard(g)); });
+    var lotIds = []; gs.forEach(function (g) { g.lots.forEach(function (l) { lotIds.push(l.id); }); });
+    var selectedHere = lotIds.filter(function (id) { return UI.selected[id]; }).length;
+    var folded = !!UI.folded[c];
+    var head = h('div', { class: 'group-h' + (folded ? ' folded' : ''), role: 'button', onclick: function () { UI.folded[c] = !UI.folded[c]; renderDrugBody(); } },
+      UI.selectMode ? h('input', { type: 'checkbox', class: 'sel', checked: selectedHere === lotIds.length, onclick: function (e) { e.stopPropagation(); var on = e.target.checked; lotIds.forEach(function (id) { if (on) UI.selected[id] = 1; else delete UI.selected[id]; }); renderDrugBody(); } }) : h('span', { class: 'fold-ic' }, folded ? '▸' : '▾'),
+      h('span', { class: 'gh-name' }, c), h('span', { class: 'cnt' }, gs.length + '종 · ' + lotIds.length + '건' + (UI.selectMode && selectedHere ? ' · ' + selectedHere + ' 선택' : '')));
+    list.appendChild(head);
+    if (folded) return;
+    var lastCat2 = null, multiCat2 = gs.some(function (g) { return (g.cat2 || '') !== (gs[0].cat2 || ''); });
+    gs.forEach(function (g) {
+      if (multiCat2 && (g.cat2 || '') !== lastCat2) { lastCat2 = g.cat2 || ''; list.appendChild(h('div', { class: 'sub-h' }, lastCat2 || '소분류 없음')); }
+      list.appendChild(groupCard(g));
+    });
   });
   body.appendChild(list);
+  renderSelectBar();
+}
+
+/* ---------- select mode: tick drugs / lots, then delete or re-categorize at once ---------- */
+function toggleSelectMode(on) {
+  UI.selectMode = on === undefined ? !UI.selectMode : !!on;
+  if (!UI.selectMode) UI.selected = {};
+  UI.selected = UI.selected || {};
+  var chip = qs('.select-chip'); if (chip) { chip.textContent = UI.selectMode ? '선택 끝' : '☑ 선택'; chip.classList.toggle('on', UI.selectMode); }
+  renderDrugBody();
+}
+function selectedLots() { return liveDrugs().filter(function (d) { return UI.selected && UI.selected[d.id]; }); }
+function renderSelectBar() {
+  var bar = qs('#select-bar');
+  if (!UI.selectMode) { if (bar) bar.remove(); document.body.classList.remove('has-select-bar'); return; }
+  if (!bar) { bar = h('div', { id: 'select-bar', class: 'select-bar' }); document.body.appendChild(bar); document.body.classList.add('has-select-bar'); }
+  var n = selectedLots().length, all = liveDrugs().length;
+  bar.innerHTML = '';
+  bar.appendChild(h('div', { class: 'sb-count' }, n ? n + '건 선택' : '약을 눌러 선택하세요', h('button', { class: 'btn ghost sm', onclick: function () { var every = n === all; UI.selected = {}; if (!every) liveDrugs().forEach(function (d) { UI.selected[d.id] = 1; }); renderDrugBody(); } }, n === all ? '선택 해제' : '전체 선택')));
+  bar.appendChild(h('div', { class: 'sb-actions' },
+    h('button', { class: 'btn', disabled: !n, onclick: function () { openBulkCategory(); } }, '분류 바꾸기'),
+    h('button', { class: 'btn danger', disabled: !n, onclick: function () { bulkDelete(); } }, '삭제 (' + n + ')'),
+    h('button', { class: 'btn ghost', onclick: function () { toggleSelectMode(false); } }, '취소')));
+}
+function bulkDelete() {
+  var lots = selectedLots(); if (!lots.length) return;
+  var names = uniq(lots.map(function (l) { return l.name; }));
+  confirmSheet('선택한 약 삭제', lots.length + '건을 삭제합니다' + (syncConfigured() ? ' (팀 시트에도 삭제로 표시돼요)' : '') + '.\n' + names.slice(0, 5).join(', ') + (names.length > 5 ? ' 외 ' + (names.length - 5) + '종' : ''), '삭제', true).then(function (ok) {
+    if (!ok) return;
+    var copies = lots.map(function (l) { return JSON.parse(JSON.stringify(l)); });
+    lots.forEach(function (l) { removeDrug(l.id); });
+    toggleSelectMode(false);
+    toast(lots.length + '건 삭제됨', { label: '되돌리기', fn: function () { restoreRecords('drugs', copies); renderDrugBody(); toast('되돌렸어요'); } });
+  });
+}
+function openBulkCategory() {
+  var lots = selectedLots(); if (!lots.length) return;
+  var cat1 = lots[0].cat1 || '', cat2 = lots[0].cat2 || '';
+  var c1s = uniq(liveDrugs().map(function (d) { return d.cat1; }).filter(Boolean)).sort(function (a, b) { return a.localeCompare(b, 'ko'); });
+  openSheet({
+    title: '분류 바꾸기 (' + lots.length + '건)',
+    render: function (c) {
+      var c2s = function () { return uniq(liveDrugs().filter(function (d) { return !cat1 || d.cat1 === cat1; }).map(function (d) { return d.cat2; }).filter(Boolean)).sort(function (a, b) { return a.localeCompare(b, 'ko'); }); };
+      var dl1 = h('datalist', { id: 'bc-cat1-list' }, c1s.map(function (v) { return h('option', { value: v }); }));
+      var dl2 = h('datalist', { id: 'bc-cat2-list' }, c2s().map(function (v) { return h('option', { value: v }); }));
+      c.body.appendChild(h('p', { class: 'muted', style: 'font-size:14px;margin:4px 0 8px' }, '선택한 약 ' + lots.length + '건의 대분류·소분류를 한 번에 바꿉니다. 비워 두면 그 칸은 그대로 둡니다.'));
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '대분류'), h('input', { id: 'bc-cat1', value: cat1, list: 'bc-cat1-list', placeholder: '예: 소화기관용약', oninput: function (e) { cat1 = e.target.value; dl2.innerHTML = ''; c2s().forEach(function (v) { dl2.appendChild(h('option', { value: v })); }); } }), dl1));
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '소분류'), h('input', { id: 'bc-cat2', value: cat2, list: 'bc-cat2-list', placeholder: '예: 제산제', oninput: function (e) { cat2 = e.target.value; } }), dl2));
+      var chips = h('div', { class: 'chips' }, c1s.slice(0, 12).map(function (v) { return h('button', { type: 'button', class: 'chip sm', onclick: function () { cat1 = v; qs('#bc-cat1').value = v; } }, v); }));
+      c.body.appendChild(chips);
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn', onclick: function () { c.close(); } }, '취소'));
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        var n1 = cat1.trim(), n2 = cat2.trim();
+        if (!n1 && !n2) { toast('바꿀 분류를 입력하세요'); return; }
+        lots.forEach(function (l) { if (n1) l.cat1 = n1; if (n2) l.cat2 = n2; touch(l); if (l.kpic && n1) DB.settings.catMap[catMapKey(l.kpic)] = { cat1: n1, cat2: n2 || l.cat2 || '' }; });
+        save(); c.close(); toggleSelectMode(false); toast(lots.length + '건 분류를 바꿨어요');
+      } }, '적용'));
+    }
+  });
 }
 function groupCard(g) {
   var lots = h('div', { class: 'lots' });
@@ -1181,6 +1333,23 @@ function groupCard(g) {
     lots.appendChild(s);
   });
   if (g.lots.length > 6) lots.appendChild(h('span', { class: 'stamp none' }, '+' + (g.lots.length - 6)));
+  if (UI.selectMode) {
+    var ids = g.lots.map(function (l) { return l.id; }), sel = ids.filter(function (id) { return UI.selected[id]; }).length;
+    var card = h('div', { class: 'card sel-card' + (sel ? ' picked' : ''), role: 'button', onclick: function () { var on = sel !== ids.length; ids.forEach(function (id) { if (on) UI.selected[id] = 1; else delete UI.selected[id]; }); renderDrugBody(); } },
+      h('div', { class: 'drug-row' },
+        h('div', { class: 'sel-left' }, h('input', { type: 'checkbox', class: 'sel', checked: sel === ids.length, onclick: function (e) { e.stopPropagation(); var on = e.target.checked; ids.forEach(function (id) { if (on) UI.selected[id] = 1; else delete UI.selected[id]; }); renderDrugBody(); } }),
+          h('div', null, h('div', { class: 'drug-name' }, g.name, g.strength ? h('span', { class: 'tag' }, g.strength) : null), h('div', { class: 'drug-sub' }, g.cat2 ? h('span', null, g.cat2) : null, h('span', null, g.lots.length + '개 로트 · ' + fmtNum(g.total))))),
+        h('div', { class: 'drug-total' }, sel ? h('b', { class: 'num' }, sel + '/' + ids.length) : null)));
+    if (g.lots.length > 1) {
+      var lotRow = h('div', { class: 'lots sel-lots' });
+      g.lots.forEach(function (l) {
+        var on = !!UI.selected[l.id];
+        lotRow.appendChild(h('button', { type: 'button', class: 'stamp ' + (on ? 'picked' : 'none'), onclick: function (e) { e.stopPropagation(); if (on) delete UI.selected[l.id]; else UI.selected[l.id] = 1; renderDrugBody(); } }, (on ? '☑ ' : '☐ ') + (l.expiry || '기간 없음') + ' · ' + fmtNum(drugTotal(l) || 0)));
+      });
+      card.appendChild(lotRow);
+    }
+    return card;
+  }
   return h('button', { class: 'card', onclick: function () { openGroupSheet(g.key); } },
     h('div', { class: 'drug-row' },
       h('div', null,
@@ -1805,6 +1974,7 @@ function renderMore(root) {
     menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '엑셀로 내보내기'));
     menu.appendChild(item('📗', '의약품 리스트 (xlsx)', '원본 엑셀과 같은 열 순서 · 유효기간순 정렬 · 요약 시트 포함', function () { exportData('drugs'); }));
     menu.appendChild(item('📙', '수하물 리스트 (xlsx)', '가방 번호 · 담당자 · 내용물 · 사진 포함', function () { exportData('bags'); }));
+    menu.appendChild(item('🚐', '명단 · 차량 배치표 (xlsx)', '참가자 명단과 차량별 탑승자 시트', function () { exportData('domestic'); }));
   }
   // ----- data -----
   menu.appendChild(h('div', { class: 'section-title', style: 'padding-left:2px' }, '데이터'));
@@ -1833,7 +2003,7 @@ function renderMore(root) {
         if (!ok) return;
         DB.drugs.forEach(function (d) { if (d.photo) deletePhoto(d.photo); });
         DB.bags.forEach(function (b) { (b.photos || []).forEach(deletePhoto); });
-        DB.drugs = []; DB.bags = []; DB.photoLocal = {};
+        KINDS.forEach(function (k) { DB[k] = []; }); DB.photoLocal = {};
         if (DB.settings.sync) DB.settings.sync.lastPull = 0;
         save(); render(); toast('지웠어요');
         if (syncConfigured()) syncNow({ manual: true });
@@ -1909,7 +2079,7 @@ function openDiagnostics() {
     ['모드', MODE + (NATIVE ? ' (앱)' : '')], ['앱 버전', (APP_INFO && APP_INFO.version) || '-'], ['OCR 엔진', (APP_INFO && APP_INFO.ocr) || 'tesseract'],
     ['OCR 마지막 오류', window.OCR_LAST_ERROR || '없음'], ['WebAssembly', typeof WebAssembly !== 'undefined' ? '지원' : '미지원'], ['Web Worker', typeof Worker !== 'undefined' ? '지원' : '미지원'],
     ['공유', syncConfigured() ? (SYNC.status + (SYNC.message ? ' · ' + SYNC.message : '') + (SYNC.lastOk ? ' · ' + fmtTime(SYNC.lastOk) : '')) : '미설정'],
-    ['데이터', liveDrugs().length + ' 로트 · ' + liveBags().length + ' 가방 · 미동기화 ' + DB.drugs.concat(DB.bags).filter(function (r) { return r._dirty; }).length + '건'],
+    ['데이터', liveDrugs().length + ' 로트 · ' + liveBags().length + ' 가방 · ' + livePeople().length + ' 명 · ' + liveVehicles().length + ' 차량 · 미동기화 ' + KINDS.reduce(function (n, k) { return n + DB[k].filter(function (r) { return r._dirty; }).length; }, 0) + '건'],
     ['브라우저', navigator.userAgent]
   ];
   openSheet({ title: '진단 정보', render: function (c) {
@@ -1948,6 +2118,12 @@ function exportData(type) {
   } else if (type === 'bags') {
     payload = { bags: sortedBags().map(function (b) { return { no: b.no, owner: b.owner || '', ownerEn: b.ownerEn || '', part: b.part || '', summary: b.summary || '', memo: b.memo || '', photos: (b.photos || []).map(function (p) { return p.slice(0, 2) === 'g:' ? (DB.photoLocal[p] || p) : p; }), items: (b.items || []).map(function (i) { return { name: i.name, qty: i.qty, unit: i.unit || '' }; }) }; }) };
     filename = '수하물리스트_' + ds + '.xlsx';
+  } else if (type === 'domestic') {
+    payload = {
+      people: sortedPeople(livePeople()).map(function (p) { var v = vehicleOf(p.id); return { name: p.name, role: p.role || '', phone: p.phone || '', vehicle: v ? v.name : '', memo: p.memo || '' }; }),
+      vehicles: liveVehicles().slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'ko', { numeric: true }); }).map(function (v) { return { name: v.name, capacity: v.capacity, load: vehicleLoad(v), driver: v.driver ? nameOf(v.driver) : '', seats: (v.seats || []).map(nameOf).filter(Boolean), memo: v.memo || '' }; })
+    };
+    filename = '명단_차량배치_' + ds + '.xlsx';
   } else {
     payload = { db: DB }; filename = '선교약품_백업_' + ds + '.json';
   }
@@ -2162,6 +2338,334 @@ function openChangePassword() {
           sy.auth = next; save(); c.close(); toast('비밀번호를 바꿨어요');
         }).catch(function (e) { help.textContent = String(e && e.message || e); help.className = 'help bad'; });
       } }, '바꾸기'));
+    }
+  });
+}
+
+/* domestic.js — 국내 탭: 명단(roster) + 차량 배치(vehicle seating). Names are dragged (swiped) or tapped into vehicles. */
+'use strict';
+
+var ROLE_OPTIONS = ['의사', '치과의사', '한의사', '약사', '간호사', '진료보조', '통역', '운전', '봉사자', '인솔', '아동사역', '찬양', '학생', '기타'];
+
+function personById(id) { return DB.people.filter(function (p) { return p.id === id && !p.deleted; })[0] || null; }
+function nameOf(id) { var p = personById(id); return p ? p.name : ''; }
+function vehicleOf(personId) { return liveVehicles().filter(function (v) { return v.driver === personId || (v.seats || []).indexOf(personId) >= 0; })[0] || null; }
+function vehicleLoad(v) { return (v.driver && personById(v.driver) ? 1 : 0) + (v.seats || []).filter(personById).length; }
+function unassignedPeople() { return livePeople().filter(function (p) { return !vehicleOf(p.id); }); }
+/** save a vehicle; names are copied in so the Google Sheet stays readable */
+function saveVehicle(v) {
+  v.seats = (v.seats || []).filter(function (id) { return personById(id) && id !== v.driver; });
+  v.driverName = v.driver ? nameOf(v.driver) : '';
+  v.seatNames = v.seats.map(nameOf);
+  putRecord('vehicles', v);
+}
+function roleRank(role) { var i = ROLE_OPTIONS.indexOf(role || ''); return i < 0 ? ROLE_OPTIONS.length : i; }
+function sortedPeople(list) { return list.slice().sort(function (a, b) { return roleRank(a.role) - roleRank(b.role) || (a.role || '').localeCompare(b.role || '', 'ko') || a.name.localeCompare(b.name, 'ko'); }); }
+
+/* ------------------------------------------------------------------ tab */
+function renderDomestic(root) {
+  root.innerHTML = '';
+  UI.domTab = UI.domTab || 'people';
+  var top = h('div', { class: 'topbar' },
+    h('div', { class: 'seg' },
+      h('button', { class: 'seg-b' + (UI.domTab === 'people' ? ' on' : ''), onclick: function () { UI.domTab = 'people'; renderDomestic(root); } }, '명단 ', h('b', null, livePeople().length)),
+      h('button', { class: 'seg-b' + (UI.domTab === 'vehicles' ? ' on' : ''), onclick: function () { UI.domTab = 'vehicles'; renderDomestic(root); } }, '차량 배치 ', h('b', null, liveVehicles().length))),
+    h('div', { class: 'subbar', style: 'padding-left:0;padding-right:0' }, syncPill()));
+  root.appendChild(top);
+  var body = h('div', { id: 'dom-body' });
+  root.appendChild(body);
+  if (UI.domTab === 'people') renderPeople(body); else renderVehicles(body);
+}
+function refreshDomestic() { var root = qs('#view'); if (root && UI.tab === 'domestic') renderDomestic(root); }
+
+/* ------------------------------------------------------------------ 명단 */
+function renderPeople(body) {
+  body.innerHTML = '';
+  var people = sortedPeople(livePeople());
+  body.appendChild(h('div', { class: 'row-actions' },
+    h('button', { class: 'btn primary', onclick: function () { openPersonSheet(null); } }, '＋ 한 명 추가'),
+    h('button', { class: 'btn', onclick: function () { openPastePeople(); } }, '여러 명 붙여넣기'),
+    people.length ? h('button', { class: 'btn ghost', onclick: function () { copyText(rosterText(), '명단을 복사했어요'); } }, '명단 복사') : null));
+  if (!people.length) {
+    body.appendChild(h('div', { class: 'empty' }, h('h2', null, '아직 명단이 없어요'),
+      h('p', null, '참가자 이름을 넣어 두면 차량 배치표에서 이름을 끌어다 태울 수 있어요. 카톡 명단을 그대로 복사해서 "여러 명 붙여넣기"에 넣는 게 제일 빨라요.')));
+    return;
+  }
+  var byRole = {}, order = [];
+  people.forEach(function (p) { var r = p.role || '역할 없음'; if (!byRole[r]) { byRole[r] = []; order.push(r); } byRole[r].push(p); });
+  var list = h('div', { class: 'list' });
+  order.forEach(function (r) {
+    list.appendChild(h('div', { class: 'group-h' }, h('span', { class: 'gh-name' }, r), h('span', { class: 'cnt' }, byRole[r].length + '명')));
+    byRole[r].forEach(function (p) {
+      var v = vehicleOf(p.id);
+      list.appendChild(h('button', { class: 'card person-card', onclick: function () { openPersonSheet(p); } },
+        h('div', { class: 'drug-row' },
+          h('div', null, h('div', { class: 'drug-name' }, p.name, p.role ? h('span', { class: 'tag' }, p.role) : null),
+            h('div', { class: 'drug-sub' }, p.phone ? h('span', null, p.phone) : null, p.memo ? h('span', null, p.memo) : null, v ? h('span', { class: 'veh-tag' }, '🚐 ' + v.name) : null)))));
+    });
+  });
+  body.appendChild(list);
+}
+function rosterText() {
+  var lines = ['[명단] ' + livePeople().length + '명'];
+  sortedPeople(livePeople()).forEach(function (p, i) { lines.push((i + 1) + '. ' + p.name + (p.role ? ' (' + p.role + ')' : '') + (p.phone ? ' ' + p.phone : '')); });
+  return lines.join('\n');
+}
+function copyText(text, msg) {
+  var done = function () { toast(msg || '복사했어요'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+  else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done) {
+  var ta = h('textarea', { style: 'position:fixed;left:-9999px;top:0' }, text); document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { toast('복사가 안 되네요 — 길게 눌러 복사하세요'); }
+  ta.remove();
+}
+
+function openPersonSheet(p) {
+  var edit = !!p;
+  var m = edit ? JSON.parse(JSON.stringify(p)) : { id: uid(), name: '', role: '', phone: '', memo: '', createdAt: nowIso() };
+  openSheet({
+    title: edit ? '참가자 수정' : '참가자 추가',
+    render: function (c) {
+      var roles = uniq(ROLE_OPTIONS.concat(livePeople().map(function (x) { return x.role; })));
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '이름'), h('input', { id: 'p-name', value: m.name, placeholder: '예: 김태연', autocomplete: 'off', oninput: function (e) { m.name = e.target.value; } })));
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '역할'),
+        h('input', { id: 'p-role', value: m.role, list: 'role-list', placeholder: '예: 약사', autocomplete: 'off', oninput: function (e) { m.role = e.target.value; } }),
+        h('datalist', { id: 'role-list' }, roles.map(function (r) { return h('option', { value: r }); })),
+        h('div', { class: 'chips', style: 'margin-top:6px' }, ROLE_OPTIONS.slice(0, 9).map(function (r) { return h('button', { type: 'button', class: 'chip sm', onclick: function () { m.role = r; qs('#p-role').value = r; } }, r); }))));
+      c.body.appendChild(h('div', { class: 'grid-2' },
+        h('div', { class: 'field' }, h('label', null, '연락처'), h('input', { value: m.phone, inputmode: 'tel', placeholder: '010-', oninput: function (e) { m.phone = e.target.value; } })),
+        h('div', { class: 'field' }, h('label', null, '메모'), h('input', { value: m.memo, placeholder: '예: 둘째 날 합류', oninput: function (e) { m.memo = e.target.value; } }))));
+      if (edit) c.body.appendChild(h('button', { class: 'btn danger', style: 'margin-top:4px', onclick: function () {
+        confirmSheet('참가자 삭제', m.name + ' 님을 명단에서 지웁니다. 차량 배치에서도 빠져요.', '삭제', true).then(function (ok) {
+          if (!ok) return;
+          liveVehicles().forEach(function (v) { if (v.driver === m.id || (v.seats || []).indexOf(m.id) >= 0) { if (v.driver === m.id) v.driver = ''; v.seats = (v.seats || []).filter(function (x) { return x !== m.id; }); saveVehicle(v); } });
+          removeRecord('people', m.id); c.close(); refreshDomestic(); toast('지웠어요');
+        });
+      } }, '명단에서 삭제'));
+      setTimeout(function () { var i = qs('#p-name'); if (i && !edit) i.focus(); }, 120);
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn', onclick: function () { c.close(); } }, '취소'));
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        m.name = (m.name || '').trim(); if (!m.name) { toast('이름을 입력하세요'); return; }
+        m.role = (m.role || '').trim(); m.phone = (m.phone || '').trim(); m.memo = (m.memo || '').trim();
+        putRecord('people', m);
+        liveVehicles().forEach(function (v) { if (v.driver === m.id || (v.seats || []).indexOf(m.id) >= 0) saveVehicle(v); }); // refresh the names kept in vehicles
+        c.close(); refreshDomestic(); toast(edit ? '수정했어요' : m.name + ' 추가됨');
+      } }, edit ? '저장' : '추가'));
+    }
+  });
+}
+
+/** one person per line: "이름 역할 연락처" in any order-ish (role recognized from the list, phone by digits) */
+function parsePeopleText(text) {
+  var out = [];
+  String(text || '').split(/\r?\n/).forEach(function (line) {
+    var t = line.replace(/^\s*(\d+[.)]|[-•·*])\s*/, '').trim(); // drop numbering / bullets
+    if (!t) return;
+    var parts = t.split(/[\t,|/]+|\s+/).filter(Boolean), name = '', role = '', phone = '', memo = [];
+    parts.forEach(function (w) {
+      var cleaned = w.replace(/^[(\[]|[)\]]$/g, '');
+      if (/^0\d{1,2}-?\d{3,4}-?\d{4}$/.test(cleaned)) phone = cleaned;
+      else if (!name) name = cleaned;
+      else if (!role && (ROLE_OPTIONS.indexOf(cleaned) >= 0 || /(의사|약사|간호|선생|목사|전도사|집사|권사|장로|학생|봉사|통역|운전|인솔)/.test(cleaned))) role = cleaned;
+      else memo.push(cleaned);
+    });
+    if (name) out.push({ name: name, role: role, phone: phone, memo: memo.join(' ') });
+  });
+  return out;
+}
+function openPastePeople() {
+  var text = '', parsed = [];
+  openSheet({
+    title: '여러 명 붙여넣기',
+    render: function (c) {
+      c.body.appendChild(h('p', { class: 'muted', style: 'font-size:14px;margin:4px 0 8px' }, '한 줄에 한 명씩. 이름 뒤에 역할·연락처를 띄어 쓰면 알아서 나눠요. 카톡 명단을 그대로 붙여넣어도 됩니다.'));
+      var preview = h('div', { class: 'help' });
+      c.body.appendChild(h('textarea', { style: 'width:100%;min-height:160px;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:14px', placeholder: '김태연 약사 010-1234-5678\n홍길동 운전\n이영희 간호사', oninput: function (e) { text = e.target.value; parsed = parsePeopleText(text); preview.textContent = parsed.length ? parsed.length + '명 인식: ' + parsed.slice(0, 6).map(function (p) { return p.name + (p.role ? '(' + p.role + ')' : ''); }).join(', ') + (parsed.length > 6 ? ' …' : '') : ''; } }));
+      c.body.appendChild(preview);
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn', onclick: function () { c.close(); } }, '취소'));
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        if (!parsed.length) { toast('이름이 없어요'); return; }
+        var existing = {}; livePeople().forEach(function (p) { existing[p.name] = p; });
+        var added = 0, updated = 0;
+        parsed.forEach(function (p) {
+          var cur = existing[p.name];
+          if (cur) { var ch = false; if (p.role && !cur.role) { cur.role = p.role; ch = true; } if (p.phone && !cur.phone) { cur.phone = p.phone; ch = true; } if (ch) { putRecord('people', cur); updated++; } return; }
+          putRecord('people', { id: uid(), name: p.name, role: p.role, phone: p.phone, memo: p.memo, createdAt: nowIso() }); added++;
+        });
+        c.close(); refreshDomestic(); toast(added + '명 추가' + (updated ? ' · ' + updated + '명 정보 보완' : '') + (parsed.length - added - updated > 0 ? ' · 이미 있는 ' + (parsed.length - added - updated) + '명 건너뜀' : ''));
+      } }, '추가'));
+    }
+  });
+}
+
+/* ------------------------------------------------------------------ 차량 배치 */
+function renderVehicles(body) {
+  body.innerHTML = '';
+  var vehicles = liveVehicles().slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'ko', { numeric: true }); });
+  var pool = sortedPeople(unassignedPeople());
+  var cap = vehicles.reduce(function (n, v) { return n + (Number(v.capacity) || 0); }, 0), load = vehicles.reduce(function (n, v) { return n + vehicleLoad(v); }, 0);
+  body.appendChild(h('div', { class: 'row-actions' },
+    h('button', { class: 'btn primary', onclick: function () { openVehicleSheet(null); } }, '＋ 차량 추가'),
+    vehicles.length ? h('button', { class: 'btn', onclick: function () { copyText(seatingText(), '배치표를 복사했어요'); } }, '배치표 복사') : null,
+    vehicles.length ? h('span', { class: 'muted', style: 'font-size:13px;margin-left:auto' }, '탑승 ' + load + '/' + cap + ' · 미배정 ' + pool.length) : null));
+  if (!livePeople().length) {
+    body.appendChild(h('div', { class: 'notice' }, '먼저 "명단" 탭에서 참가자를 넣어 주세요. 그다음 이름을 차량으로 끌어다 놓으면 돼요.'));
+  }
+  if (!vehicles.length) {
+    body.appendChild(h('div', { class: 'empty' }, h('h2', null, '차량을 추가해 주세요'), h('p', null, '차량 이름(예: 1호차 카니발)과 정원을 넣으면 카드가 생기고, 아래 미배정 명단에서 이름을 옆으로 밀어(스윙) 차량에 올려놓으면 배치됩니다.')));
+  }
+  if (UI.carry) body.appendChild(h('div', { class: 'notice carry' }, '👆 ', h('b', null, nameOf(UI.carry) || '?'), ' 님을 태울 차량을 누르세요 · ', h('button', { class: 'btn ghost sm', onclick: function () { UI.carry = null; refreshDomestic(); } }, '취소')));
+  var list = h('div', { class: 'list' });
+  vehicles.forEach(function (v) { list.appendChild(vehicleCard(v)); });
+  body.appendChild(list);
+  // unassigned pool
+  var poolEl = h('div', { class: 'pool drop', dataset: { drop: 'pool' }, onclick: function () { if (UI.carry) { assignPerson(UI.carry, null); } } },
+    h('div', { class: 'group-h' }, h('span', { class: 'gh-name' }, '미배정'), h('span', { class: 'cnt' }, pool.length + '명')),
+    pool.length ? h('div', { class: 'chips wrap' }, pool.map(function (p) { return personChip(p, null); })) : h('div', { class: 'muted', style: 'font-size:13px;padding:4px 2px' }, vehicles.length ? '모두 배치됐어요 🎉' : ''));
+  body.appendChild(poolEl);
+  if (vehicles.length && pool.length) body.appendChild(h('div', { class: 'muted', style: 'font-size:12px;padding:8px 4px' }, '이름을 옆으로 밀어서 차량 카드에 놓거나, 이름을 누른 뒤 차량을 누르세요. 차량 안의 이름을 다시 누르면 내릴 수 있어요.'));
+}
+function vehicleCard(v) {
+  var load = vehicleLoad(v), cap = Number(v.capacity) || 0, over = cap && load > cap;
+  var driver = v.driver ? personById(v.driver) : null;
+  var seats = (v.seats || []).map(personById).filter(Boolean);
+  var card = h('div', { class: 'card veh-card drop' + (over ? ' over' : '') + (UI.carry ? ' target' : ''), dataset: { drop: v.id }, onclick: function () { if (UI.carry) assignPerson(UI.carry, v.id); } },
+    h('div', { class: 'veh-head' },
+      h('div', null, h('div', { class: 'drug-name' }, '🚐 ' + v.name), h('div', { class: 'drug-sub' }, driver ? h('span', null, '운전 ' + driver.name) : h('span', { class: 'muted' }, '운전자 미정'), v.memo ? h('span', null, v.memo) : null)),
+      h('div', { class: 'veh-cap' + (over ? ' over' : ''), onclick: function (e) { e.stopPropagation(); openVehicleSheet(v); } }, h('b', null, load), cap ? ' / ' + cap : '', h('small', null, over ? ' 초과' : (cap ? ' 명' : ''))),
+      h('button', { class: 'iconbtn sm', 'aria-label': '차량 수정', onclick: function (e) { e.stopPropagation(); openVehicleSheet(v); } }, '✎')),
+    h('div', { class: 'chips wrap seats' },
+      driver ? personChip(driver, v, true) : null,
+      seats.map(function (p) { return personChip(p, v, false); }),
+      cap && load < cap ? h('span', { class: 'chip empty-seat' }, '빈자리 ' + (cap - load)) : null));
+  return card;
+}
+/** draggable (swipe sideways) + tappable name chip */
+function personChip(p, vehicle, isDriver) {
+  var chip = h('button', { type: 'button', class: 'chip person' + (isDriver ? ' driver' : '') + (UI.carry === p.id ? ' carrying' : ''), dataset: { pid: p.id }, title: p.role || '' },
+    isDriver ? '🚗 ' : '', p.name, p.role ? h('small', null, p.role) : null);
+  chip.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (UI.carry === p.id) { UI.carry = null; refreshDomestic(); return; }
+    if (vehicle && !UI.carry) { // tapping a seated person: offer to drop them off or move
+      UI.carry = p.id; refreshDomestic(); return;
+    }
+    if (UI.carry && vehicle) { assignPerson(UI.carry, vehicle.id); return; }
+    UI.carry = p.id; refreshDomestic();
+  });
+  attachSwipeDrag(chip, p);
+  return chip;
+}
+/** pointer-based drag: start when the finger moves sideways (vertical movement keeps scrolling the page) */
+function attachSwipeDrag(el, p) {
+  var startX = 0, startY = 0, dragging = false, ghost = null, pointerId = null, lastTarget = null;
+  el.style.touchAction = 'pan-y';
+  el.addEventListener('pointerdown', function (e) {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    startX = e.clientX; startY = e.clientY; dragging = false; pointerId = e.pointerId;
+  });
+  el.addEventListener('pointermove', function (e) {
+    if (pointerId !== e.pointerId) return;
+    var dx = e.clientX - startX, dy = e.clientY - startY;
+    if (!dragging) {
+      if (Math.abs(dx) < 14 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      dragging = true;
+      try { el.setPointerCapture(e.pointerId); } catch (err) { }
+      ghost = h('div', { class: 'drag-ghost' }, p.name); document.body.appendChild(ghost);
+      document.body.classList.add('dragging'); el.classList.add('drag-src');
+    }
+    e.preventDefault();
+    ghost.style.transform = 'translate(' + (e.clientX - 40) + 'px,' + (e.clientY - 56) + 'px)';
+    var t = dropTargetAt(e.clientX, e.clientY);
+    if (t !== lastTarget) { if (lastTarget) lastTarget.classList.remove('drop-hover'); if (t) t.classList.add('drop-hover'); lastTarget = t; }
+  });
+  var finish = function (e) {
+    if (pointerId !== e.pointerId) return;
+    pointerId = null;
+    if (!dragging) return;
+    dragging = false;
+    var t = dropTargetAt(e.clientX, e.clientY);
+    if (ghost) { ghost.remove(); ghost = null; }
+    document.body.classList.remove('dragging'); el.classList.remove('drag-src');
+    if (lastTarget) { lastTarget.classList.remove('drop-hover'); lastTarget = null; }
+    if (t && e.type !== 'pointercancel') { var dest = t.dataset.drop; assignPerson(p.id, dest === 'pool' ? null : dest); }
+    // the click that follows a drag must not toggle "carry"
+    var swallow = function (ev) { ev.stopPropagation(); ev.preventDefault(); el.removeEventListener('click', swallow, true); };
+    el.addEventListener('click', swallow, true); setTimeout(function () { el.removeEventListener('click', swallow, true); }, 300);
+  };
+  el.addEventListener('pointerup', finish);
+  el.addEventListener('pointercancel', finish);
+}
+function dropTargetAt(x, y) {
+  var els = document.elementsFromPoint ? document.elementsFromPoint(x, y) : [document.elementFromPoint(x, y)];
+  for (var i = 0; i < els.length; i++) { var d = els[i] && els[i].closest ? els[i].closest('.drop') : null; if (d) return d; }
+  return null;
+}
+/** move a person into a vehicle (or out of every vehicle when vehicleId is null) */
+function assignPerson(personId, vehicleId) {
+  var p = personById(personId); if (!p) { UI.carry = null; refreshDomestic(); return; }
+  var changed = [];
+  liveVehicles().forEach(function (v) {
+    var had = v.driver === personId || (v.seats || []).indexOf(personId) >= 0;
+    if (had && v.id !== vehicleId) { if (v.driver === personId) v.driver = ''; v.seats = (v.seats || []).filter(function (x) { return x !== personId; }); changed.push(v); }
+  });
+  var target = vehicleId ? liveVehicles().filter(function (v) { return v.id === vehicleId; })[0] : null;
+  if (target && target.driver !== personId && (target.seats || []).indexOf(personId) < 0) { target.seats = (target.seats || []).concat([personId]); if (changed.indexOf(target) < 0) changed.push(target); }
+  changed.forEach(saveVehicle);
+  UI.carry = null; refreshDomestic();
+  if (target) { var load = vehicleLoad(target), cap = Number(target.capacity) || 0; toast(p.name + ' → ' + target.name + (cap && load > cap ? ' · 정원 초과!' : '')); }
+  else if (changed.length) toast(p.name + ' 내림');
+}
+function seatingText() {
+  var lines = ['[차량 배치] ' + new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })];
+  liveVehicles().slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'ko', { numeric: true }); }).forEach(function (v) {
+    var cap = Number(v.capacity) || 0, names = (v.seats || []).map(nameOf).filter(Boolean);
+    lines.push('');
+    lines.push('🚐 ' + v.name + ' (' + vehicleLoad(v) + (cap ? '/' + cap : '') + '명)' + (v.driver && nameOf(v.driver) ? ' · 운전 ' + nameOf(v.driver) : ''));
+    if (names.length) lines.push('  ' + names.join(', '));
+    if (v.memo) lines.push('  ※ ' + v.memo);
+  });
+  var pool = unassignedPeople();
+  if (pool.length) { lines.push(''); lines.push('미배정 (' + pool.length + '): ' + pool.map(function (p) { return p.name; }).join(', ')); }
+  return lines.join('\n');
+}
+function openVehicleSheet(v) {
+  var edit = !!v;
+  var m = edit ? JSON.parse(JSON.stringify(v)) : { id: uid(), name: (liveVehicles().length + 1) + '호차', capacity: 9, driver: '', seats: [], memo: '', createdAt: nowIso() };
+  openSheet({
+    title: edit ? '차량 수정' : '차량 추가',
+    render: function (c) {
+      c.body.appendChild(h('div', { class: 'grid-2' },
+        h('div', { class: 'field' }, h('label', null, '차량 이름'), h('input', { id: 'v-name', value: m.name, placeholder: '예: 1호차 카니발', oninput: function (e) { m.name = e.target.value; } })),
+        h('div', { class: 'field' }, h('label', null, '정원 (운전자 포함)'), h('input', { value: m.capacity == null ? '' : m.capacity, inputmode: 'numeric', placeholder: '9', oninput: function (e) { m.capacity = e.target.value === '' ? null : Number(e.target.value); } }))));
+      var drivers = sortedPeople(livePeople());
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '운전자'),
+        h('select', { onchange: function (e) { m.driver = e.target.value; } },
+          h('option', { value: '', selected: !m.driver }, '미정'),
+          drivers.map(function (p) { var other = vehicleOf(p.id); return h('option', { value: p.id, selected: m.driver === p.id }, p.name + (p.role ? ' (' + p.role + ')' : '') + (other && other.id !== m.id ? ' — ' + other.name + '에 탑승 중' : '')); })),
+        h('div', { class: 'help' }, '운전 역할인 사람이 위에 먼저 나와요. 다른 차에 타고 있던 사람을 고르면 그 차에서 내려요.')));
+      c.body.appendChild(h('div', { class: 'field' }, h('label', null, '메모'), h('input', { value: m.memo, placeholder: '예: 짐 많음, 6시 출발', oninput: function (e) { m.memo = e.target.value; } })));
+      if (edit) c.body.appendChild(h('button', { class: 'btn danger', style: 'margin-top:4px', onclick: function () {
+        confirmSheet('차량 삭제', m.name + ' 을(를) 지웁니다. 타고 있던 ' + vehicleLoad(v) + '명은 미배정으로 돌아가요.', '삭제', true).then(function (ok) { if (!ok) return; removeRecord('vehicles', m.id); c.close(); refreshDomestic(); toast('지웠어요'); });
+      } }, '차량 삭제'));
+      setTimeout(function () { var i = qs('#v-name'); if (i && !edit) { i.focus(); i.select(); } }, 120);
+    },
+    footer: function (c) {
+      c.foot.appendChild(h('button', { class: 'btn', onclick: function () { c.close(); } }, '취소'));
+      c.foot.appendChild(h('button', { class: 'btn primary', onclick: function () {
+        m.name = (m.name || '').trim(); if (!m.name) { toast('차량 이름을 입력하세요'); return; }
+        if (m.driver) { // a driver sits in one vehicle only
+          liveVehicles().forEach(function (o) { if (o.id === m.id) return; var had = o.driver === m.driver || (o.seats || []).indexOf(m.driver) >= 0; if (had) { if (o.driver === m.driver) o.driver = ''; o.seats = (o.seats || []).filter(function (x) { return x !== m.driver; }); saveVehicle(o); } });
+          m.seats = (m.seats || []).filter(function (x) { return x !== m.driver; });
+        }
+        saveVehicle(m); c.close(); refreshDomestic(); toast(edit ? '수정했어요' : m.name + ' 추가됨');
+      } }, edit ? '저장' : '추가'));
     }
   });
 }
@@ -2507,8 +3011,11 @@ function extractFacts(items) {
 function render() {
   var root = qs('#view');
   qsa('.tab').forEach(function (t) { t.classList.toggle('active', t.dataset.tab === UI.tab); });
+  if (UI.tab !== 'drugs') { UI.selectMode = false; UI.selected = {}; var sb = qs('#select-bar'); if (sb) sb.remove(); document.body.classList.remove('has-select-bar'); }
+  if (UI.tab !== 'domestic') UI.carry = null;
   if (UI.tab === 'drugs') renderDrugs(root);
   else if (UI.tab === 'bags') renderBags(root);
+  else if (UI.tab === 'domestic') renderDomestic(root);
   else renderMore(root);
   window.scrollTo(0, 0);
 }
